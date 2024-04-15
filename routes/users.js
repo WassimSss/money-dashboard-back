@@ -11,7 +11,7 @@ router.post('/signup', signup);
 
 router.post('/signin', signin);
 
-router.get('/:id/getBalance', authenticateJWT, getBalance);
+router.get('/getBalance', authenticateJWT, getBalance);
 
 
 
