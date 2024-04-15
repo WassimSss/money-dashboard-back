@@ -2,6 +2,9 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+// const { authenticateJWT } = require('../modules/authenticateJWT');
+
+// router.get('/check-auth', authenticateJWT);
 
 router.get('/check-auth', (req, res) => {
 	const token = req.headers.authorization.split(' ')[1]; // Supposant que le token est envoyé sous la forme "Bearer <token>"
