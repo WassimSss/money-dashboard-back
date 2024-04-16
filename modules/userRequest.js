@@ -1,3 +1,5 @@
+const { isNull } = require('lodash');
+const Income = require('../models/incomes');
 const User = require('../models/users')
 
 /**
@@ -40,4 +42,21 @@ const getBalanceOfUser = async (id) => {
     return balance
 }
 
-module.exports = { findUserById, getBalanceOfUser }
+const getIncomeOfUser = async (id) => {
+
+    const allIncomes = await Income.find({ user: id });
+
+    if (!allIncomes) {
+        // return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de tout les incomes" })
+        return null
+
+    }
+
+    console.log(allIncomes)
+    // res.status(200).json({ result: true, message: "Ajout de l'income réussie !" })
+
+    return balance
+}
+
+module.exports = { findUserById, getBalanceOfUser, getIncomeOfUser }
+
