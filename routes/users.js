@@ -4,6 +4,7 @@ const router = express.Router();
 const { signup, signin } = require('../controllers/auth');
 const { authenticateJWT } = require('../modules/authenticateJWT');
 const { getBalance } = require('../controllers/balance');
+const { getAllIncome, addIncome } = require('../controllers/income');
 
 
 
@@ -11,7 +12,16 @@ router.post('/signup', signup);
 
 router.post('/signin', signin);
 
+
+
 router.get('/getBalance', authenticateJWT, getBalance);
+
+
+
+router.get('/getIncome', authenticateJWT, getAllIncome);
+
+router.post('/addIncome', authenticateJWT, addIncome);
+
 
 
 
