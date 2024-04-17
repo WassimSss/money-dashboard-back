@@ -4,21 +4,26 @@ const { findUserById, getIncomeOfUser } = require('../modules/userRequest');
 exports.getAllIncome = [
     async (req, res) => {
 
-        getIncomeOfUser()
-        // const idUser = req.user.id;
 
-        // if (!idUser) {
-        //     return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance" })
-        // }
+        const idUser = req.user.id;
 
+        if (!idUser) {
+            return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance" })
+        }
+
+        const income = await getIncomeOfUser(idUser)
+        console.log('in serv ', income)
+        if (!income && income !== 0) {
+            return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de tout les revenus" })
+
+        }
         // const allIncomes = await User.find({ user: idUser });
 
         // if (!allIncomes) {
-        //     return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de tout les incomes" })
 
         // }
 
-        // res.status(200).json({ result: true, message: "Ajout de l'income réussie !" })
+        res.status(200).json({ result: true, income })
 
     }
 ]
@@ -27,6 +32,7 @@ exports.addIncome = [
     async (req, res) => {
 
         const idUser = req.user.id;
+        const today = new Date()
 
         if (!idUser) {
             return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance" })
@@ -41,6 +47,11 @@ exports.addIncome = [
 
         if (!paymentDate) {
             return res.status(400).json({ result: false, message: "Veuillez rentrer une date de paiement" })
+        }
+
+        if (new Date(paymentDate).getTime() < today.getTime()) {
+            return res.status(400).json({ result: false, message: "Veuillez ne pouvez pas entrer une date de paiement inférieur à la date d'aujourd'hui" })
+
         }
 
         const newIncome = new Income({
