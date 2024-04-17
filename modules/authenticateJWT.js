@@ -15,7 +15,7 @@ const authenticateJWT = (req, res, next) => {
                 return res.status(403).json({ isAuthenticated: false, message: 'Authentification requise' });
             }
             req.user = user;
-            console.log('auth a partir du middleware reussie')
+            // console.log('auth a partir du middleware reussie')
             next();
             // return res.status(201).json({ isAuthenticated: true });
         });
