@@ -74,7 +74,9 @@ exports.addIncome = [
             res.status(400).json({ result: false, message: "Erreur lors de la création de l'income" })
         }
 
-        res.status(200).json({ result: true, message: "Ajout de l'income réussie !" })
+        const sumIncome = await getIncomeOfUser(idUser)
+
+        res.status(200).json({ result: true, income: sumIncome, message: "Ajout de l'income réussie !" })
 
     }
 ]
