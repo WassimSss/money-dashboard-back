@@ -1,0 +1,82 @@
+const Expense = require('../models/expenses');
+const { findUserById, getExpensesOfUser } = require('../modules/userRequest');
+
+exports.getAllExpenses = [
+    async (req, res) => {
+
+
+        const idUser = req.user.id;
+
+        if (!idUser) {
+            return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance" })
+        }
+
+        const expenses = await getExpensesOfUser(idUser)
+        console.log('in serv ', expenses)
+        if (!expenses && expenses !== 0) {
+            return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de tout les revenus" })
+
+        }
+        // const allIncomes = await User.find({ user: idUser });
+
+        // if (!allIncomes) {
+
+        // }
+
+        res.status(200).json({ result: true, expenses })
+
+    }
+]
+
+exports.addExpenses = [
+    async (req, res) => {
+
+        const idUser = req.user.id;
+        const today = new Date()
+
+        if (!idUser) {
+            return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/expenses" })
+        }
+
+        const { amount, category, description, expensesDate, source, expensesMethod, frequency, status } = req.body
+
+        if (!amount) {
+            return res.status(400).json({ result: false, message: "Veuillez rentrer un montant" })
+
+        }
+
+        if (!expensesDate) {
+            return res.status(400).json({ result: false, message: "Veuillez rentrer une date de dépense" })
+        }
+
+        // if (new Date(paymentDate).getTime() < today.getTime()) {
+        //     return res.status(400).json({ result: false, message: "Veuillez ne pouvez pas entrer une date de paiement inférieur à la date d'aujourd'hui" })
+
+        // };:
+
+        const newExpenses = new Expense({
+            user: idUser,
+            amount,
+            category,
+            description,
+            expensesDate: new Date(expensesDate),
+            source,
+            expensesMethod,
+            frequency,
+            status
+        })
+
+        const expenses = await newExpenses.save();
+
+        console.log(expenses);
+
+        if (!expenses) {
+            res.status(400).json({ result: false, message: "Erreur lors de la création de la dépense" })
+        }
+
+        const sumExpenses = await getExpensesOfUser(idUser)
+
+        res.status(200).json({ result: true, expenses: sumExpenses, message: "Ajout de la dépense réussie !" })
+
+    }
+]
