@@ -6,6 +6,7 @@ const { authenticateJWT } = require('../modules/authenticateJWT');
 const { getBalance } = require('../controllers/balance');
 const { getAllIncome, addIncome } = require('../controllers/income');
 const { getAllSaving, addSaving } = require('../controllers/saving');
+const { getAllExpenses, addExpenses } = require('../controllers/expenses');
 
 
 
@@ -29,6 +30,11 @@ router.post('/addIncome', authenticateJWT, addIncome);
 router.get('/getSaving', authenticateJWT, getAllSaving);
 
 router.post('/addSaving', authenticateJWT, addSaving);
+
+
+router.get('/getExpenses', authenticateJWT, getAllExpenses);
+
+router.post('/addExpenses', authenticateJWT, addExpenses);
 
 
 
