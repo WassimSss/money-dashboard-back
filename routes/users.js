@@ -44,4 +44,41 @@ router.post('/addExpenses', authenticateJWT, addExpenses);
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+router.get('/', (req, res) => {
+
+    const user = ["Paul", "¨Pierre", "Marine", "Mofjz", "Maqqd"];
+    
+    res.json({user})
+});
+
+
+
+
+
 module.exports = router;
