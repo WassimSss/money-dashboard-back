@@ -1,7 +1,7 @@
 const User = require('../models/users');
 const { findUserById, getBalanceOfUser } = require('../modules/userRequest');
 
-exports.getBalance = [
+exports.getBalanceAmount = [
 	async (req, res) => {
 		const idUser = req.user.id;
 

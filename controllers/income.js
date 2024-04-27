@@ -1,83 +1,181 @@
 const Income = require('../models/incomes');
 const { findUserById, getIncomeOfUser } = require('../modules/userRequest');
 
+exports.getIncomeAmount = [
+	async (req, res) => {
+		const idUser = req.user.id;
+
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+			});
+		}
+
+		const income = await getIncomeOfUser(idUser);
+		console.log('in serv ', income);
+		if (!income && income !== 0) {
+			return res
+				.status(400)
+				.json({ result: false, message: 'Erreur lors de la récuperation de tout les revenus' });
+		}
+		// const allIncomes = await User.find({ user: idUser });
+
+		// if (!allIncomes) {
+
+		// }
+
+		res.status(200).json({ result: true, income });
+	}
+];
+
 exports.getAllIncome = [
-    async (req, res) => {
+	async (req, res) => {
+		const idUser = req.user.id;
 
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/income"
+			});
+		}
 
-        const idUser = req.user.id;
+		const income = await Income.find({ user: idUser });
 
-        if (!idUser) {
-            return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance" })
-        }
+		income.sort((a, b) => {
+			return new Date(b.date) - new Date(a.date);
+		});
 
-        const income = await getIncomeOfUser(idUser)
-        console.log('in serv ', income)
-        if (!income && income !== 0) {
-            return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de tout les revenus" })
-
-        }
-        // const allIncomes = await User.find({ user: idUser });
-
-        // if (!allIncomes) {
-
-        // }
-
-        res.status(200).json({ result: true, income })
-
-    }
-]
+		res.json({ result: true, income });
+	}
+];
 
 exports.addIncome = [
-    async (req, res) => {
+	async (req, res) => {
+		const idUser = req.user.id;
+		const today = new Date();
 
-        const idUser = req.user.id;
-        const today = new Date()
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+			});
+		}
 
-        if (!idUser) {
-            return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance" })
-        }
+		const { amount, type, category, description, paymentDate, source, paymentMethod, frequency, status } = req.body;
 
-        const { amount, category, description, paymentDate, source, paymentMethod, frequency, status } = req.body
+		console.log(paymentDate);
+		if (!amount) {
+			return res.status(400).json({ result: false, message: 'Veuillez rentrer un montant' });
+		}
 
-        if (!amount) {
-            return res.status(400).json({ result: false, message: "Veuillez rentrer un montant" })
+		if (!paymentDate) {
+			return res.status(400).json({ result: false, message: 'Veuillez rentrer une date de paiement' });
+		}
 
-        }
+		if (new Date(paymentDate).getTime() < today.getTime()) {
+			return res.status(400).json({
+				result: false,
+				message: "Veuillez ne pouvez pas entrer une date de paiement inférieur à la date d'aujourd'hui"
+			});
+		}
 
-        if (!paymentDate) {
-            return res.status(400).json({ result: false, message: "Veuillez rentrer une date de paiement" })
-        }
+		const newIncome = new Income({
+			user: idUser,
+			amount,
+			type,
+			category,
+			description,
+			date: paymentDate,
+			source,
+			paymentMethod,
+			frequency,
+			status
+		});
 
-        if (new Date(paymentDate).getTime() < today.getTime()) {
-            return res.status(400).json({ result: false, message: "Veuillez ne pouvez pas entrer une date de paiement inférieur à la date d'aujourd'hui" })
+		const income = await newIncome.save();
 
-        }
+		console.log(income);
 
-        const newIncome = new Income({
-            user: idUser,
-            amount,
-            category,
-            description,
-            paymentDate: new Date(paymentDate),
-            source,
-            paymentMethod,
-            frequency,
-            status
-        })
+		if (!income) {
+			res.status(400).json({ result: false, message: "Erreur lors de la création de l'income" });
+		}
 
-        const income = await newIncome.save();
+		const sumIncome = await getIncomeOfUser(idUser);
 
-        console.log(income);
+		res.status(200).json({ result: true, income: sumIncome, message: "Ajout de l'income réussie !" });
+	}
+];
 
-        if (!income) {
-            res.status(400).json({ result: false, message: "Erreur lors de la création de l'income" })
-        }
+// Accepter un revenu et le mettre dans la balance en l'ajoutant
+exports.acceptIncome = [
+	async (req, res) => {
+		const idUser = req.user.id;
 
-        const sumIncome = await getIncomeOfUser(idUser)
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+			});
+		}
 
-        res.status(200).json({ result: true, income: sumIncome, message: "Ajout de l'income réussie !" })
+		const { idIncome } = req.body;
 
-    }
-]
+		const income = await Income.findById(idIncome);
 
+		if (!income) {
+			return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de l'income" });
+		}
+
+		const user = await findUserById(idUser);
+
+		// Recuperer le solde de l'utilisateur
+
+		const balance = user.balance;
+
+		// Ajouter le revenu dans le solde de l'utilisateur
+
+		// Si le revenu est un virement, on l'ajoute au solde
+		if (income.type === 'virement') {
+			user.balance = balance + income.amount;
+		} else {
+			user.balance = balance - income.amount;
+		}
+
+		// Et enlever le revenu de la liste des revenus
+
+		const incomeDeleted = await Income.findByIdAndDelete(idIncome);
+
+		if (!incomeDeleted) {
+			return res.status(400).json({ result: false, message: "Erreur lors de la suppression de l'income" });
+		}
+
+		await user.save();
+
+		res.status(200).json({ result: true, message: "Ajout de l'income dans la balance réussie !" });
+	}
+];
+
+// Supprimer un revenu
+exports.deleteIncome = [
+	async (req, res) => {
+		const idUser = req.user.id;
+
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+			});
+		}
+
+		const { idIncome } = req.body;
+
+		const income = await Income.findByIdAndDelete(idIncome);
+
+		if (!income) {
+			return res.status(400).json({ result: false, message: "Erreur lors de la suppression de l'income" });
+		}
+
+		res.status(200).json({ result: true, message: "Suppression de l'income réussie !" });
+	}
+];
