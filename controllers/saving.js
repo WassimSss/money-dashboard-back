@@ -1,7 +1,7 @@
 const Saving = require('../models/savings');
 const { findUserById, getIncomeOfUser, getSavingOfUser } = require('../modules/userRequest');
 
-exports.getAllSaving = [
+exports.getSavingAmount = [
     async (req, res) => {
 
 
