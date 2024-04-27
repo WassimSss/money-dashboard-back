@@ -105,3 +105,31 @@ exports.addExpenses = [
 		res.status(200).json({ result: true, expenses: sumExpenses, message: 'Ajout de la dépense réussie !' });
 	}
 ];
+
+// delete expenses by req.body.idExpenses
+
+exports.deleteExpenses = [
+	async (req, res) => {
+		const idUser = req.user.id;
+		const { idExpenses } = req.body;
+
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/expenses"
+			});
+		}
+
+		if (!idExpenses) {
+			return res.status(400).json({ result: false, message: 'Veuillez rentrer un id de dépense' });
+		}
+
+		const expenses = await Expense.findByIdAndDelete(idExpenses);
+
+		if (!expenses) {
+			return res.status(400).json({ result: false, message: 'Erreur lors de la suppression de la dépense' });
+		}
+
+		res.status(200).json({ result: true, message: 'Suppression de la dépense réussie !' });
+	}
+];

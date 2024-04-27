@@ -106,3 +106,76 @@ exports.addIncome = [
 		res.status(200).json({ result: true, income: sumIncome, message: "Ajout de l'income réussie !" });
 	}
 ];
+
+// Accepter un revenu et le mettre dans la balance en l'ajoutant
+exports.acceptIncome = [
+	async (req, res) => {
+		const idUser = req.user.id;
+
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+			});
+		}
+
+		const { idIncome } = req.body;
+
+		const income = await Income.findById(idIncome);
+
+		if (!income) {
+			return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de l'income" });
+		}
+
+		const user = await findUserById(idUser);
+
+		// Recuperer le solde de l'utilisateur
+
+		const balance = user.balance;
+
+		// Ajouter le revenu dans le solde de l'utilisateur
+
+		// Si le revenu est un virement, on l'ajoute au solde
+		if (income.type === 'virement') {
+			user.balance = balance + income.amount;
+		} else {
+			user.balance = balance - income.amount;
+		}
+
+		// Et enlever le revenu de la liste des revenus
+
+		const incomeDeleted = await Income.findByIdAndDelete(idIncome);
+
+		if (!incomeDeleted) {
+			return res.status(400).json({ result: false, message: "Erreur lors de la suppression de l'income" });
+		}
+
+		await user.save();
+
+		res.status(200).json({ result: true, message: "Ajout de l'income dans la balance réussie !" });
+	}
+];
+
+// Supprimer un revenu
+exports.deleteIncome = [
+	async (req, res) => {
+		const idUser = req.user.id;
+
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+			});
+		}
+
+		const { idIncome } = req.body;
+
+		const income = await Income.findByIdAndDelete(idIncome);
+
+		if (!income) {
+			return res.status(400).json({ result: false, message: "Erreur lors de la suppression de l'income" });
+		}
+
+		res.status(200).json({ result: true, message: "Suppression de l'income réussie !" });
+	}
+];
