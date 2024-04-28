@@ -11,6 +11,13 @@ const incomeSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+<<<<<<< HEAD
+=======
+    type: {
+        type: String,
+        default: ''
+    },
+>>>>>>> budget
     category: {
         type: String,
         default: ''
