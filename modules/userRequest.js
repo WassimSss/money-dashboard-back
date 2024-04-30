@@ -51,7 +51,7 @@ const getIncomeOfUser = async (id) => {
 		return null;
 	}
 
-	const allIncomes = await Income.find({ user: id });
+	const allIncomes = await Income.find({ user: id, status: 'pending' });
 
 	let income = 0;
 
@@ -130,4 +130,31 @@ const getExpensesOfUser = async (id) => {
 	return expenses;
 };
 
+/*const sumExpensesOfUser = async (id, expenses) => {
+	const user = await findUserById(id);
+
+	// console.log(user)
+
+	if (!user) {
+		return null;
+	}
+
+	let expenses = 0;
+
+	for (const oneExpense of expenses) {
+		expenses += oneExpense.amount;
+	}
+	// console.log(allExpenses)
+	if (!expenses) {
+		// return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de tout les incomes" })
+		return null;
+	}
+
+	// res.status(200).json({ result: true, message: "Ajout de l'income réussie !" })
+
+	console.log(expenses);
+	return expenses;
+
+}
+*/
 module.exports = { findUserById, getBalanceOfUser, getIncomeOfUser, getSavingOfUser, getExpensesOfUser };

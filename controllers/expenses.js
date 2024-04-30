@@ -50,6 +50,180 @@ exports.getAllExpenses = [
 	}
 ];
 
+exports.getExpensesAmountToday = [
+	async (req, res) => {
+		const idUser = req.user.id;
+
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/expenses"
+			});
+		}
+
+		const today = new Date();
+		// avec mongoose, filtrer les expenses par raport a la date d'aujourd'hui grace a $gte et $lte
+		const expenses = await Expense.find({
+			user: idUser,
+			date: {
+				$gte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+				$lte: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
+			}
+		});
+
+
+		if (!expenses) {
+			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
+		}
+
+		const expensesAmount = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+
+		res.status(200).json({ result: true, expenses: expensesAmount });
+	}
+];
+
+exports.getExpensesAmountWeek = [
+
+	async (req, res) => {
+
+		const idUser = req.user.id;
+
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/expenses"
+			});
+		}
+
+		const today = new Date();
+
+		const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+		const lastDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 7));
+
+		const expenses = await Expense.find({
+			user: idUser,
+			date: {
+				$gte: new Date(firstDayOfWeek.getFullYear(), firstDayOfWeek.getMonth(), firstDayOfWeek.getDate()),
+				$lte: new Date(lastDayOfWeek.getFullYear(), lastDayOfWeek.getMonth(), lastDayOfWeek.getDate())
+			}
+		});
+
+		if (!expenses) {
+			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
+		}
+
+		const expensesAmount = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+
+		res.status(200).json({ result: true, expenses: expensesAmount });
+	}
+];
+
+exports.getExpensesAmountMonth = [
+
+	async (req, res) => {
+
+		const idUser = req.user.id;
+
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/expenses"
+			});
+		}
+
+		const today = new Date();
+
+		const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+		const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+		const expenses = await Expense.find({
+			user: idUser,
+			date: {
+				$gte: new Date(firstDayOfMonth.getFullYear(), firstDayOfMonth.getMonth(), firstDayOfMonth.getDate()),
+				$lte: new Date(lastDayOfMonth.getFullYear(), lastDayOfMonth.getMonth(), lastDayOfMonth.getDate())
+			}
+		});
+
+		if (!expenses) {
+			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
+		}
+
+		const expensesAmount = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+
+		res.status(200).json({ result: true, expenses: expensesAmount });
+	}
+];
+
+// Filtrer les dépenses en fonctions de la catégories, sortir les 3 catégories avec le plus de dépenses, et mettre le reste dans une catégories autre
+exports.getExpensesByCategory = [
+	async (req, res) => {
+		const idUser = req.user.id;
+		const { period } = req.params;
+
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/expenses"
+			});
+		}
+
+		const today = new Date();
+		let startDate, endDate;
+
+		if (period === 'day') {
+			startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+			endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+		} else if (period === 'week') {
+			const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+			const lastDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 7));
+			startDate = new Date(firstDayOfWeek.getFullYear(), firstDayOfWeek.getMonth(), firstDayOfWeek.getDate());
+			endDate = new Date(lastDayOfWeek.getFullYear(), lastDayOfWeek.getMonth(), lastDayOfWeek.getDate());
+		} else if (period === 'month') {
+			const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+			const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+			startDate = new Date(firstDayOfMonth.getFullYear(), firstDayOfMonth.getMonth(), firstDayOfMonth.getDate());
+			endDate = new Date(lastDayOfMonth.getFullYear(), lastDayOfMonth.getMonth(), lastDayOfMonth.getDate());
+		} else {
+			return res.status(400).json({ result: false, message: 'Période invalide' });
+		}
+
+		const expenses = await Expense.find({
+			user: idUser,
+			date: {
+				$gte: startDate,
+				$lte: endDate
+			}
+		});
+
+		if (!expenses) {
+			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
+		}
+
+		const expensesByCategory = expenses.reduce((acc, expense) => {
+			if (!acc[expense.category]) {
+				acc[expense.category] = 0;
+			}
+			acc[expense.category] += expense.amount;
+			return acc;
+		}, {});
+
+		const sortedExpensesByCategory = Object.entries(expensesByCategory).sort((a, b) => b[1] - a[1]);
+
+		const top3ExpensesByCategory = sortedExpensesByCategory.slice(0, 3);
+
+		const otherExpenses = sortedExpensesByCategory.slice(3);
+
+		const otherExpensesAmount = otherExpenses.reduce((acc, expense) => acc + expense[1], 0);
+
+		const top3ExpensesByCategoryWithOther = [...top3ExpensesByCategory, ['Autre', otherExpensesAmount]];
+
+		res.status(200).json({ result: true, expenses: top3ExpensesByCategoryWithOther });
+	}
+];
+
+
+
+
 exports.addExpenses = [
 	async (req, res) => {
 		const idUser = req.user.id;
@@ -75,10 +249,10 @@ exports.addExpenses = [
 			return res.status(400).json({ result: false, message: 'Veuillez rentrer une date de dépense' });
 		}
 
-		// if (new Date(paymentDate).getTime() < today.getTime()) {
-		//     return res.status(400).json({ result: false, message: "Veuillez ne pouvez pas entrer une date de paiement inférieur à la date d'aujourd'hui" })
+		if (new Date(expensesDate).getTime() > today.getTime()) {
+			return res.status(400).json({ result: false, message: "Veuillez ne pouvez pas entrer une date de paiement supérieur à la date d'aujourd'hui" })
 
-		// };:
+		};
 
 		const newExpenses = new Expense({
 			user: idUser,

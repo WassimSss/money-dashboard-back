@@ -3,16 +3,18 @@ const express = require('express');
 const router = express.Router();
 const { signup, signin } = require('../controllers/auth');
 const { authenticateJWT } = require('../modules/authenticateJWT');
-const { getBalanceAmount, setBalance } = require('../controllers/balance');
+const { getBalanceAmount, getAllBalance, setBalance } = require('../controllers/balance');
 const { getIncomeAmount, addIncome, getAllIncome, acceptIncome, deleteIncome } = require('../controllers/income');
 const { getSavingAmount, getAllSaving, addSaving, deleteSaving } = require('../controllers/saving');
-const { getExpensesAmount, getAllExpenses, addExpenses, deleteExpenses } = require('../controllers/expenses');
+const { getExpensesAmount, getAllExpenses, getExpensesAmountToday, addExpenses, deleteExpenses, getExpensesAmountWeek, getExpensesAmountMonth, getExpensesByCategory } = require('../controllers/expenses');
 
 router.post('/signup', signup);
 
 router.post('/signin', signin);
 
 router.get('/getBalance', authenticateJWT, getBalanceAmount);
+
+router.get('/getAllBalance', authenticateJWT, getAllBalance);
 
 router.post('/setBalance', authenticateJWT, setBalance);
 
@@ -35,6 +37,14 @@ router.post('/addSaving', authenticateJWT, addSaving);
 router.delete('/deleteSaving', authenticateJWT, deleteSaving);
 
 router.get('/getExpenses', authenticateJWT, getExpensesAmount);
+
+router.get('/getExpenses/day', authenticateJWT, getExpensesAmountToday);
+
+router.get('/getExpenses/week', authenticateJWT, getExpensesAmountWeek);
+
+router.get('/getExpenses/month', authenticateJWT, getExpensesAmountMonth);
+
+router.get('/getExpensesByCategory/:period', authenticateJWT, getExpensesByCategory);
 
 router.get('/getAllExpenses', authenticateJWT, getAllExpenses);
 
@@ -71,8 +81,8 @@ router.delete('/deleteExpenses', authenticateJWT, deleteExpenses);
 router.get('/', (req, res) => {
 
     const user = ["Paul", "¨Pierre", "Marine", "Mofjz", "Maqqd"];
-    
-    res.json({user})
+
+    res.json({ user })
 });
 
 

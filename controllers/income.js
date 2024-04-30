@@ -40,7 +40,7 @@ exports.getAllIncome = [
 			});
 		}
 
-		const income = await Income.find({ user: idUser });
+		const income = await Income.find({ user: idUser, status: "pending" });
 
 		income.sort((a, b) => {
 			return new Date(b.date) - new Date(a.date);
@@ -90,7 +90,7 @@ exports.addIncome = [
 			source,
 			paymentMethod,
 			frequency,
-			status
+			status: 'pending'
 		});
 
 		const income = await newIncome.save();
@@ -121,7 +121,7 @@ exports.acceptIncome = [
 
 		const { idIncome } = req.body;
 
-		const income = await Income.findById(idIncome);
+		const income = await Income.findOne({ _id: idIncome, status: 'pending' });
 
 		if (!income) {
 			return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de l'income" });
@@ -133,9 +133,14 @@ exports.acceptIncome = [
 
 		const balance = user.balance;
 
+		// if (!balance) {
+		//	return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de la balance" });
+		// }
+
 		// Ajouter le revenu dans le solde de l'utilisateur
 
 		// Si le revenu est un virement, on l'ajoute au solde
+
 		if (income.type === 'virement') {
 			user.balance = balance + income.amount;
 		} else {
@@ -144,11 +149,14 @@ exports.acceptIncome = [
 
 		// Et enlever le revenu de la liste des revenus
 
-		const incomeDeleted = await Income.findByIdAndDelete(idIncome);
+		// Mettre le income a status accepted
+		income.status = 'accepted';
 
-		if (!incomeDeleted) {
-			return res.status(400).json({ result: false, message: "Erreur lors de la suppression de l'income" });
-		}
+		await income.save();
+
+		// if (!incomeAccepted) {
+		//			return res.status(400).json({ result: false, message: "Erreur lors de la sauvegarde de l'income" });
+		// }
 
 		await user.save();
 

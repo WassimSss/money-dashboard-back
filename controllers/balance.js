@@ -1,3 +1,5 @@
+const Expense = require('../models/expenses');
+const Income = require('../models/incomes');
 const User = require('../models/users');
 const { findUserById, getBalanceOfUser } = require('../modules/userRequest');
 
@@ -25,6 +27,36 @@ exports.getBalanceAmount = [
 		res.json({ result: true, balance: balanceUser });
 	}
 ];
+
+// Récuperer toutes les virements et prelevement de l'utilisateur une fois qu'ils ont été validé (status: accepted)
+// ainsi que ses achats (expenses) et les trier par date
+exports.getAllBalance = [
+	async (req, res) => {
+		const idUser = req.user.id;
+
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+			});
+		}
+
+		// stocker les virements/prelevement et les achats de l'utilisateur
+
+		const balancesAndExpenses = []
+
+		const balance = await Income.find({ user: idUser, status: 'accepted' });
+
+		balancesAndExpenses.push(...balance);
+
+		const expenses = await Expense.find({ user: idUser });
+
+		balancesAndExpenses.push(...expenses);
+
+		res.json({ result: true, history: balancesAndExpenses });
+	}
+];
+
 
 exports.setBalance = [
 	async (req, res) => {
