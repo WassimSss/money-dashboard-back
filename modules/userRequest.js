@@ -3,6 +3,7 @@ const Income = require('../models/incomes');
 const User = require('../models/users');
 const Saving = require('../models/savings');
 const Expense = require('../models/expenses');
+const Budget = require('../models/budgets');
 
 /**
  * Recherche un utilisateur par son ID dans la base de données.
@@ -130,6 +131,48 @@ const getExpensesOfUser = async (id) => {
 	return expenses;
 };
 
+
+// Récuperer les dépenses du mois de l'utilisateur et les triers par catégories
+const getExpensesByCategory = async (id, period) => {
+	const user = await findUserById(id);
+
+	if (!user) {
+		return null;
+	}
+
+	const today = new Date();
+	const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+	const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+	const allExpenses = await Expense.find({
+		user: id,
+		date: {
+			$gte: new Date(firstDayOfMonth.getFullYear(), firstDayOfMonth.getMonth(), firstDayOfMonth.getDate()),
+			$lte: new Date(lastDayOfMonth.getFullYear(), lastDayOfMonth.getMonth(), lastDayOfMonth.getDate())
+		}
+	});
+
+	if (!allExpenses) {
+		return null;
+	}
+
+	const expensesByCategory = [];
+
+	for (const oneExpense of allExpenses) {
+		const existingCategory = expensesByCategory.find((expense) => expense.category === oneExpense.category);
+
+		if (existingCategory) {
+			existingCategory.amount += oneExpense.amount;
+		} else {
+			expensesByCategory.push({ category: oneExpense.category, amount: oneExpense.amount });
+		}
+	}
+
+	const expensesAmount = allExpenses.reduce((acc, expense) => acc + expense.amount, 0);
+
+
+	return { expensesByCategory, expensesAmount };
+};
 /*const sumExpensesOfUser = async (id, expenses) => {
 	const user = await findUserById(id);
 
@@ -157,4 +200,24 @@ const getExpensesOfUser = async (id) => {
 
 }
 */
-module.exports = { findUserById, getBalanceOfUser, getIncomeOfUser, getSavingOfUser, getExpensesOfUser };
+
+// getBudgetAmount
+
+const getBudgetAmount = async (id, period) => {
+	const user = await findUserById(id);
+
+	if (!user) {
+		return null;
+	}
+
+	const budget = await Budget.findOne({ user: id });
+
+	if (!budget) {
+		return null;
+	}
+
+	return budget[`${period}_amount`];
+}
+
+
+module.exports = { findUserById, getBalanceOfUser, getIncomeOfUser, getSavingOfUser, getExpensesOfUser, getBudgetAmount, getExpensesByCategory };

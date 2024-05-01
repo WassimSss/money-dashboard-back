@@ -7,18 +7,14 @@ const budgetSchema = new mongoose.Schema({
 		ref: 'User', // Référence à la collection des utilisateurs
 		required: true
 	},
-	month: {
+	month_amount: {
 		type: Number,
 		required: true
 	},
-	// year: {
+	// year_amount: {
 	// 	type: Number,
 	// 	required: true
 	// },
-	amount: {
-		type: Number,
-		required: true
-	},
 	expenses: [
 		{
 			type: mongoose.Schema.Types.ObjectId,

@@ -1,52 +1,70 @@
-const { findUserById, getBalanceOfUser } = require('../modules/userRequest');
+const Budget = require('../models/budgets');
+const Expense = require('../models/expenses');
+const { getBudgetAmount, getExpensesByCategory } = require('../modules/userRequest');
 
-exports.getBalance = [
+// Recuperer le budget d'un utilisateur
+exports.getBudget = [
 	async (req, res) => {
 		const idUser = req.user.id;
+		const { period } = req.params;
+
+		console.log(idUser)
+		const budgetAmount = await getBudgetAmount(idUser, period);
+
+		const expensesByCategory = await getExpensesByCategory(idUser, period);
+
+		console.log(budgetAmount)
+		if (!budgetAmount && budgetAmount !== 0) {
+			return res
+				.status(400)
+				.json({ result: false, message: 'Erreur lors de la récuperation du budget' });
+		}
+
+
+
+		res.status(200).json({ result: true, budgetAmount, expensesByCategory: expensesByCategory.expensesByCategory, expensesAmount: expensesByCategory.expensesAmount });
+	}
+]
+
+
+// Modifier le budget d'un utilisateur
+exports.setBudget = [
+	async (req, res) => {
+		const idUser = req.user.id;
+		const { monthAmount } = req.body;
 
 		if (!idUser) {
 			return res.status(400).json({
 				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/budget"
 			});
 		}
 
-		const balanceUser = await getBalanceOfUser(idUser);
+		console.log(idUser)
+		// si l'utilisateur a déjà un budget, ajouter le budget
+		let budget = await Budget.findOne({ user: idUser });
 
-		console.log(balanceUser);
-		if (!balanceUser && balanceUser !== 0) {
-			return res.status(400).json({
-				result: false,
-				message: 'Erreur lors de la récuperation de balance lors de /users/idUser/balance'
+		if (budget) {
+			const updatedBudget = await Budget.findOneAndUpdate(
+				{ user: idUser },
+				{ month_amount: monthAmount },
+				{ new: true });
+
+			budget = await updatedBudget.save();
+
+		} else {
+			// Récuperer les dépenses de l'utilisateur
+			const expenses = await Expense.find({ user: idUser });
+
+			const newBudget = new Budget({
+				user: idUser,
+				month_amount: monthAmount,
+				expenses
 			});
+
+			budget = await newBudget.save();
 		}
 
-		res.json({ result: true, balance: balanceUser });
+		res.json({ result: true, budget });
 	}
-];
-
-exports.setBalance = [
-	async (req, res) => {
-		const idUser = req.user.id;
-
-		if (!idUser) {
-			return res.status(400).json({ result: false, message: "Erreur lors de l'ajout de la somme" });
-		}
-
-		const { amount } = req.body;
-
-		if (!amount) {
-			return res.status(400).json({ result: false, message: 'Veuillez rentrer un montant' });
-		}
-
-		const user = await User.findByIdAndUpdate(idUser, { balance: amount }, { new: true });
-
-		if (!user) {
-			return res.status(404).json({ result: false, message: 'Utilisateur non trouvé' });
-		}
-
-		console.log(user);
-
-		res.status(200).json({ result: true, balance: user.balance, message: 'Ajout de la somme réussie !' });
-	}
-];
+]

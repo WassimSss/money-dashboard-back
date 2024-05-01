@@ -7,6 +7,7 @@ const { getBalanceAmount, getAllBalance, setBalance } = require('../controllers/
 const { getIncomeAmount, addIncome, getAllIncome, acceptIncome, deleteIncome } = require('../controllers/income');
 const { getSavingAmount, getAllSaving, addSaving, deleteSaving } = require('../controllers/saving');
 const { getExpensesAmount, getAllExpenses, getExpensesAmountToday, addExpenses, deleteExpenses, getExpensesAmountWeek, getExpensesAmountMonth, getExpensesByCategory } = require('../controllers/expenses');
+const { setBudget, getBudget } = require('../controllers/budget');
 
 router.post('/signup', signup);
 
@@ -51,6 +52,11 @@ router.get('/getAllExpenses', authenticateJWT, getAllExpenses);
 router.post('/addExpenses', authenticateJWT, addExpenses);
 
 router.delete('/deleteExpenses', authenticateJWT, deleteExpenses);
+
+router.post('/setBudget', authenticateJWT, setBudget);
+
+router.get('/getBudget/:period', authenticateJWT, getBudget);
+
 
 
 

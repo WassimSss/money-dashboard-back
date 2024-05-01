@@ -215,6 +215,9 @@ exports.getExpensesByCategory = [
 
 		const otherExpensesAmount = otherExpenses.reduce((acc, expense) => acc + expense[1], 0);
 
+		console.log("otherExpensesAmount : ", otherExpensesAmount);
+		if (otherExpensesAmount === 0) return res.status(200).json({ result: true, expenses: top3ExpensesByCategory });
+
 		const top3ExpensesByCategoryWithOther = [...top3ExpensesByCategory, ['Autre', otherExpensesAmount]];
 
 		res.status(200).json({ result: true, expenses: top3ExpensesByCategoryWithOther });
