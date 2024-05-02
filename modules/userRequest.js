@@ -4,6 +4,7 @@ const User = require('../models/users');
 const Saving = require('../models/savings');
 const Expense = require('../models/expenses');
 const Budget = require('../models/budgets');
+const ExpensesCategory = require('../models/expensesCategories');
 
 /**
  * Recherche un utilisateur par son ID dans la base de données.
@@ -157,16 +158,20 @@ const getExpensesByCategory = async (id, period) => {
 	}
 
 	const expensesByCategory = [];
-
-	for (const oneExpense of allExpenses) {
-		const existingCategory = expensesByCategory.find((expense) => expense.category === oneExpense.category);
-
+	for (const expense of allExpenses) {
+		const category = await ExpensesCategory.findById(expense.category);
+		const categoryName = category.category;
+		const categoryBudget = category.budget;
+		const categoryAmount = expense.amount;
+		const existingCategory = expensesByCategory.find(item => item.categoryName === categoryName);
 		if (existingCategory) {
-			existingCategory.amount += oneExpense.amount;
+			existingCategory.categoryAmount += categoryAmount;
 		} else {
-			expensesByCategory.push({ category: oneExpense.category, amount: oneExpense.amount });
+			expensesByCategory.push({ categoryName, categoryAmount, categoryBudget });
 		}
 	}
+
+	console.log(expensesByCategory)
 
 	const expensesAmount = allExpenses.reduce((acc, expense) => acc + expense.amount, 0);
 

@@ -13,7 +13,7 @@ exports.getBudget = [
 
 		const expensesByCategory = await getExpensesByCategory(idUser, period);
 
-		console.log(budgetAmount)
+		console.log("expensesByCategory : ", expensesByCategory)
 		if (!budgetAmount && budgetAmount !== 0) {
 			return res
 				.status(400)

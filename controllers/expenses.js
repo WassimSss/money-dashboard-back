@@ -1,4 +1,5 @@
 const Expense = require('../models/expenses');
+const ExpensesCategory = require('../models/expensesCategories');
 const { findUserById, getExpensesOfUser } = require('../modules/userRequest');
 
 exports.getExpensesAmount = [
@@ -40,13 +41,28 @@ exports.getAllExpenses = [
 			});
 		}
 
-		const expenses = await Expense.find({ user: idUser });
+		// get all expenses of the user and take the category name of populate category
+		const expenses = await Expense.find({ user: idUser }).populate('category');
 
-		expenses.sort((a, b) => {
-			return new Date(b.date) - new Date(a.date);
+		if (!expenses) {
+			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
+		}
+
+		const formattedExpenses = expenses.map((expense) => {
+			return {
+				id: expense._id,
+				amount: expense.amount,
+				category: expense.category.category,
+				description: expense.description,
+				date: expense.date,
+				source: expense.source,
+				expensesMethod: expense.expensesMethod,
+				frequency: expense.frequency,
+				status: expense.status
+			};
 		});
 
-		res.json({ result: true, expenses });
+		res.json({ result: true, expenses: formattedExpenses });
 	}
 ];
 
@@ -199,13 +215,22 @@ exports.getExpensesByCategory = [
 			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
 		}
 
-		const expensesByCategory = expenses.reduce((acc, expense) => {
-			if (!acc[expense.category]) {
-				acc[expense.category] = 0;
+
+		console.log("expenses :", expenses)
+
+		const expensesByCategory = [];
+		for (const expense of expenses) {
+			const category = await ExpensesCategory.findById(expense.category);
+			const categoryName = category.category;
+			const categoryAmount = expense.amount;
+			if (expensesByCategory[categoryName]) {
+				expensesByCategory[categoryName] += categoryAmount;
+			} else {
+				expensesByCategory[categoryName] = categoryAmount;
 			}
-			acc[expense.category] += expense.amount;
-			return acc;
-		}, {});
+		}
+
+		console.log("expensesByCategory : ", expensesByCategory)
 
 		const sortedExpensesByCategory = Object.entries(expensesByCategory).sort((a, b) => b[1] - a[1]);
 
@@ -215,7 +240,6 @@ exports.getExpensesByCategory = [
 
 		const otherExpensesAmount = otherExpenses.reduce((acc, expense) => acc + expense[1], 0);
 
-		console.log("otherExpensesAmount : ", otherExpensesAmount);
 		if (otherExpensesAmount === 0) return res.status(200).json({ result: true, expenses: top3ExpensesByCategory });
 
 		const top3ExpensesByCategoryWithOther = [...top3ExpensesByCategory, ['Autre', otherExpensesAmount]];
@@ -232,7 +256,7 @@ exports.addExpenses = [
 		const idUser = req.user.id;
 		const today = new Date();
 
-		console.log('expensesDate : ', req.body.expensesDate);
+		console.log('expensesDate : ', req.body);
 		if (!idUser) {
 			return res.status(400).json({
 				result: false,
