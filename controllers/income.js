@@ -50,6 +50,40 @@ exports.getAllIncome = [
 	}
 ];
 
+exports.getVirementOfMonth = [
+
+	async (req, res) => {
+		const idUser = req.user.id;
+		const { monthNumber } = req.params;
+
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/income"
+			});
+		}
+
+		const today = new Date();
+
+		const firstDayOfMonth = new Date(today.getFullYear(), monthNumber - 1, 1);
+		const lastDayOfMonth = new Date(today.getFullYear(), monthNumber, 0);
+
+		const income = await Income.find({
+			user: idUser,
+			type: "virement",
+			status: "accepted",
+			date: {
+				$gte: new Date(firstDayOfMonth.getFullYear(), firstDayOfMonth.getMonth(), firstDayOfMonth.getDate()),
+				$lte: new Date(lastDayOfMonth.getFullYear(), lastDayOfMonth.getMonth(), lastDayOfMonth.getDate())
+			}
+		});
+
+		const sum = income.reduce((total, item) => total + item.amount, 0); 
+		res.json({ result: true, income: sum});
+	}
+];
+
+
 exports.addIncome = [
 	async (req, res) => {
 		const idUser = req.user.id;

@@ -1,5 +1,6 @@
 const Expense = require('../models/expenses');
 const ExpensesCategory = require('../models/expensesCategories');
+const Income = require('../models/incomes');
 const { findUserById, getExpensesOfUser } = require('../modules/userRequest');
 
 exports.getExpensesAmount = [
@@ -149,8 +150,9 @@ exports.getExpensesAmountMonth = [
 
 		const today = new Date();
 
-		const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-		const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+		const monthNumber = req.params.monthNumber;
+		const firstDayOfMonth = new Date(today.getFullYear(), monthNumber - 1, 1);
+		const lastDayOfMonth = new Date(today.getFullYear(), monthNumber, 0);
 
 		const expenses = await Expense.find({
 			user: idUser,
@@ -160,13 +162,33 @@ exports.getExpensesAmountMonth = [
 			}
 		});
 
+		const incomesPrelevement = await Income.find({
+			user: idUser,
+			type: "prelevement",
+			status: "accepted",
+			date: {
+				$gte: new Date(firstDayOfMonth.getFullYear(), firstDayOfMonth.getMonth(), firstDayOfMonth.getDate()),
+				$lte: new Date(lastDayOfMonth.getFullYear(), lastDayOfMonth.getMonth(), lastDayOfMonth.getDate())
+			}
+		});
+
+		console.log("incomesPrelevement : ", incomesPrelevement)
+
 		if (!expenses) {
 			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
 		}
 
+		if (!incomesPrelevement) {
+			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des prelevements' });
+		}
+
 		const expensesAmount = expenses.reduce((acc, expense) => acc + expense.amount, 0);
 
-		res.status(200).json({ result: true, expenses: expensesAmount });
+		const incomesPrelevementAmount = incomesPrelevement.reduce((acc, income) => acc + income.amount, 0);
+		console.log("expensesAmount : ", expensesAmount)
+		console.log("incomesPrelevementAmount : ", incomesPrelevementAmount)
+
+		res.status(200).json({ result: true, expenses: expensesAmount,incomesPrelevementAmount, expensesAmountTotal: expensesAmount - incomesPrelevementAmount});
 	}
 ];
 
@@ -266,6 +288,7 @@ exports.addExpenses = [
 
 		const { amount, category, description, expensesDate, source, expensesMethod, frequency, status } = req.body;
 
+		console.log(req.body)
 		console.log('expensesDate : ', expensesDate);
 
 		if (!amount) {

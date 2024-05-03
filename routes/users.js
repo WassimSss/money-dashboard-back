@@ -4,7 +4,7 @@ const router = express.Router();
 const { signup, signin } = require('../controllers/auth');
 const { authenticateJWT } = require('../modules/authenticateJWT');
 const { getBalanceAmount, getAllBalance, setBalance } = require('../controllers/balance');
-const { getIncomeAmount, addIncome, getAllIncome, acceptIncome, deleteIncome } = require('../controllers/income');
+const { getIncomeAmount, addIncome, getAllIncome, acceptIncome, deleteIncome, getVirementOfMonth } = require('../controllers/income');
 const { getSavingAmount, getAllSaving, addSaving, deleteSaving } = require('../controllers/saving');
 const { getExpensesAmount, getAllExpenses, getExpensesAmountToday, addExpenses, deleteExpenses, getExpensesAmountWeek, getExpensesAmountMonth, getExpensesByCategory } = require('../controllers/expenses');
 const { setBudget, getBudget } = require('../controllers/budget');
@@ -23,6 +23,8 @@ router.post('/setBalance', authenticateJWT, setBalance);
 router.get('/getIncome', authenticateJWT, getIncomeAmount);
 
 router.get('/getAllIncome', authenticateJWT, getAllIncome);
+
+router.get('/getVirementOfMonth/month/:monthNumber', authenticateJWT, getVirementOfMonth);
 
 router.post('/addIncome', authenticateJWT, addIncome);
 
@@ -44,7 +46,7 @@ router.get('/getExpenses/day', authenticateJWT, getExpensesAmountToday);
 
 router.get('/getExpenses/week', authenticateJWT, getExpensesAmountWeek);
 
-router.get('/getExpenses/month', authenticateJWT, getExpensesAmountMonth);
+router.get('/getExpenses/month/:monthNumber', authenticateJWT, getExpensesAmountMonth);
 
 router.get('/getExpensesByCategory/:period', authenticateJWT, getExpensesByCategory);
 

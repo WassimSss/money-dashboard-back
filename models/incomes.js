@@ -43,6 +43,10 @@ const incomeSchema = new mongoose.Schema({
     status: {
         type: String,
         default: ''
+    },
+    date: {
+        type: Date,
+        default: Date.now
     }
 });
 
