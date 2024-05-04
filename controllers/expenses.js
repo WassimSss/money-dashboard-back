@@ -337,6 +337,7 @@ exports.deleteExpenses = [
 		const idUser = req.user.id;
 		const { idExpenses } = req.body;
 
+		console.log(req.body);
 		if (!idUser) {
 			return res.status(400).json({
 				result: false,

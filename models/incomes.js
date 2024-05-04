@@ -16,9 +16,9 @@ const incomeSchema = new mongoose.Schema({
         default: ''
     },
     category: {
-        type: String,
-        default: ''
-
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ExpensesCategory', // Référence à la collection des catégories de dépenses
+        default: null
     },
     description: {
         type: String,

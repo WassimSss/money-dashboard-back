@@ -40,18 +40,34 @@ exports.getAllIncome = [
 			});
 		}
 
-		const income = await Income.find({ user: idUser, status: "pending" });
+		const income = await Income.find({ user: idUser, status: 'pending' }).populate('category');
 
 		income.sort((a, b) => {
 			return new Date(b.date) - new Date(a.date);
 		});
 
-		res.json({ result: true, income });
+		console.log(income);
+
+		const formattedIncome = income.map((income) => {
+			return {
+				id: income._id,
+				amount: income.amount,
+				type: income.type,
+				category: income.category.category,
+				description: income.description,
+				date: income.date,
+				source: income.source,
+				paymentMethod: income.paymentMethod,
+				frequency: income.frequency,
+				status: income.status
+			};
+		});
+
+		res.json({ result: true, income : formattedIncome});
 	}
 ];
 
 exports.getVirementOfMonth = [
-
 	async (req, res) => {
 		const idUser = req.user.id;
 		const { monthNumber } = req.params;
@@ -70,19 +86,18 @@ exports.getVirementOfMonth = [
 
 		const income = await Income.find({
 			user: idUser,
-			type: "virement",
-			status: "accepted",
+			type: 'virement',
+			status: 'accepted',
 			date: {
 				$gte: new Date(firstDayOfMonth.getFullYear(), firstDayOfMonth.getMonth(), firstDayOfMonth.getDate()),
 				$lte: new Date(lastDayOfMonth.getFullYear(), lastDayOfMonth.getMonth(), lastDayOfMonth.getDate())
 			}
 		});
 
-		const sum = income.reduce((total, item) => total + item.amount, 0); 
-		res.json({ result: true, income: sum});
+		const sum = income.reduce((total, item) => total + item.amount, 0);
+		res.json({ result: true, income: sum });
 	}
 ];
-
 
 exports.addIncome = [
 	async (req, res) => {

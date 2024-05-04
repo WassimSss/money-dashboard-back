@@ -43,20 +43,37 @@ exports.getAllBalance = [
 
 		// stocker les virements/prelevement et les achats de l'utilisateur
 
-		const balancesAndExpenses = []
+		const balancesAndExpenses = [];
 
-		const balance = await Income.find({ user: idUser, status: 'accepted' });
+		const balance = await Income.find({ user: idUser, status: 'accepted' }).populate('category');
 
 		balancesAndExpenses.push(...balance);
 
-		const expenses = await Expense.find({ user: idUser });
+		const expenses = await Expense.find({ user: idUser }).populate('category');
 
 		balancesAndExpenses.push(...expenses);
 
-		res.json({ result: true, history: balancesAndExpenses });
+		const formattedBalancesAndExpenses = balancesAndExpenses.map((balance) => {
+			if(balance.type){
+				console.log(balance)
+			}
+			return {
+				id: balance._id,
+				amount: balance.amount,
+				category: balance.category.category,
+				description: balance.description,
+				date: balance.date,
+				source: balance.source,
+				balancesMethod: balance.balancesMethod,
+				frequency: balance.frequency,
+				status: balance.status
+			};
+		});
+		// console.log(balancesAndExpenses);
+
+		res.json({ result: true, history: formattedBalancesAndExpenses });
 	}
 ];
-
 
 exports.setBalance = [
 	async (req, res) => {
