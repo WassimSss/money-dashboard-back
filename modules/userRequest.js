@@ -152,8 +152,10 @@ const getExpensesByCategory = async (id, period) => {
 	}
 
 	const today = new Date();
-	const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-	const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+	const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth() - 1, 0);
+	console.log("firstDayOfMonth : ", firstDayOfMonth)
+	const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 0, 0);
+	console.log("lastDayOfMonth : ", lastDayOfMonth)
 
 	const allExpenses = await Expense.find({
 		user: id,
