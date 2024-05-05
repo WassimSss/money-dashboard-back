@@ -5,7 +5,7 @@ const Saving = require('../models/savings');
 const Expense = require('../models/expenses');
 const Budget = require('../models/budgets');
 const ExpensesCategory = require('../models/expensesCategories');
-
+const moment = require('moment');
 /**
  * Recherche un utilisateur par son ID dans la base de données.
  *
@@ -142,26 +142,46 @@ const getExpensesOfUser = async (id) => {
 	return expenses;
 };
 
-
 // Récuperer les dépenses du mois de l'utilisateur et les triers par catégories
-const getExpensesByCategory = async (id, period) => {
+const getExpensesByCategory = async (id, period, periodNumber) => {
 	const user = await findUserById(id);
 
 	if (!user) {
 		return null;
 	}
 
-	const today = new Date();
-	const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-	console.log("firstDayOfMonth : ", firstDayOfMonth)
-	const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-	console.log("lastDayOfMonth : ", lastDayOfMonth)
+	let startDate, endDate;
+	let dayNumber = moment().dayOfYear();
+	let weekNumber = moment().week();
+	let monthNumber = moment().add(1, 'month').month();
+	let yearNumber = moment().year();
 
+	if (period === 'day') {
+		periodNumber && (dayNumber = periodNumber);
+		startDate = moment(dayNumber, 'DDD DDDD').format();
+		endDate = moment(startDate).endOf('day').format();
+	} else if (period === 'week') {
+		periodNumber && (weekNumber = periodNumber);
+		startDate = moment(weekNumber, 'w ww').format('YYYY-MM-DD');
+		endDate = moment(startDate).endOf('week').format('YYYY-MM-DD');
+	} else if (period === 'month') {
+		periodNumber && (monthNumber = periodNumber);
+		startDate = moment(monthNumber, 'M MM').format('YYYY-MM-DD');
+		endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+	} else if (period === 'year') {
+		periodNumber && (yearNumber = periodNumber);
+		startDate = moment(yearNumber, 'YYYY').format('YYYY-MM-DD');
+		endDate = moment(startDate).endOf('year').format('YYYY-MM-DD');
+	} else {
+		return res.status(400).json({ result: false, message: 'Période invalide' });
+	}
+
+	console.log(startDate, endDate);
 	const allExpenses = await Expense.find({
 		user: id,
 		date: {
-			$gte: new Date(firstDayOfMonth.getFullYear(), firstDayOfMonth.getMonth(), firstDayOfMonth.getDate()),
-			$lte: new Date(lastDayOfMonth.getFullYear(), lastDayOfMonth.getMonth(), lastDayOfMonth.getDate())
+			$gte: startDate,
+			$lte: endDate
 		}
 	});
 
@@ -175,7 +195,7 @@ const getExpensesByCategory = async (id, period) => {
 		const categoryName = category.category;
 		const categoryBudget = category.budget;
 		const categoryAmount = expense.amount;
-		const existingCategory = expensesByCategory.find(item => item.categoryName === categoryName);
+		const existingCategory = expensesByCategory.find((item) => item.categoryName === categoryName);
 		if (existingCategory) {
 			existingCategory.categoryAmount += categoryAmount;
 		} else {
@@ -183,10 +203,9 @@ const getExpensesByCategory = async (id, period) => {
 		}
 	}
 
-	console.log(expensesByCategory)
+	console.log(expensesByCategory);
 
 	const expensesAmount = allExpenses.reduce((acc, expense) => acc + expense.amount, 0);
-
 
 	return { expensesByCategory, expensesAmount };
 };
@@ -234,7 +253,14 @@ const getBudgetAmount = async (id, period) => {
 	}
 
 	return budget[`${period}_amount`];
-}
+};
 
-
-module.exports = { findUserById, getBalanceOfUser, getIncomeOfUser, getSavingOfUser, getExpensesOfUser, getBudgetAmount, getExpensesByCategory };
+module.exports = {
+	findUserById,
+	getBalanceOfUser,
+	getIncomeOfUser,
+	getSavingOfUser,
+	getExpensesOfUser,
+	getBudgetAmount,
+	getExpensesByCategory
+};

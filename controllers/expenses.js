@@ -2,6 +2,7 @@ const Expense = require('../models/expenses');
 const ExpensesCategory = require('../models/expensesCategories');
 const Income = require('../models/incomes');
 const { findUserById, getExpensesOfUser } = require('../modules/userRequest');
+const moment = require('moment');
 
 exports.getExpensesAmount = [
 	async (req, res) => {
@@ -21,11 +22,6 @@ exports.getExpensesAmount = [
 				.status(400)
 				.json({ result: false, message: 'Erreur lors de la récuperation de tout les revenus' });
 		}
-		// const allIncomes = await User.find({ user: idUser });
-
-		// if (!allIncomes) {
-
-		// }
 
 		res.status(200).json({ result: true, expenses });
 	}
@@ -34,6 +30,8 @@ exports.getExpensesAmount = [
 exports.getAllExpenses = [
 	async (req, res) => {
 		const idUser = req.user.id;
+		const { period, periodNumber } = req.params;
+
 
 		if (!idUser) {
 			return res.status(400).json({
@@ -42,8 +40,42 @@ exports.getAllExpenses = [
 			});
 		}
 
-		// get all expenses of the user and take the category name of populate category
-		const expenses = await Expense.find({ user: idUser }).populate('category');
+		let startDate, endDate;
+		let dayNumber = moment().dayOfYear();
+		let weekNumber = moment().week();
+		let monthNumber = moment().add(1, 'month').month();
+		let yearNumber = moment().year();
+
+		if (period === 'day') {
+			periodNumber && (dayNumber = periodNumber);
+			startDate = moment(dayNumber, 'DDD DDDD').format();
+			endDate = moment(startDate).endOf('day').format();
+
+		} else if (period === 'week') {
+			periodNumber && (weekNumber = periodNumber);
+			startDate = moment(weekNumber, 'w ww').format('YYYY-MM-DD');
+			endDate = moment(startDate).endOf('week').format('YYYY-MM-DD');
+
+		} else if (period === 'month') {
+			periodNumber && (monthNumber = periodNumber);
+			startDate = moment(monthNumber, 'M MM').format('YYYY-MM-DD');
+			endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+
+		} else if (period === 'year') {
+			periodNumber && (yearNumber = periodNumber);
+			startDate = moment(yearNumber, 'YYYY').format('YYYY-MM-DD');
+			endDate = moment(startDate).endOf('year').format('YYYY-MM-DD');
+		} else {
+			return res.status(400).json({ result: false, message: 'Période invalide' });
+		}
+
+		const expenses = await Expense.find({
+			user: idUser,
+			date: {
+				$gte: startDate,
+				$lte: endDate
+			}
+		}).populate('category');
 
 		if (!expenses) {
 			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
@@ -67,9 +99,11 @@ exports.getAllExpenses = [
 	}
 ];
 
-exports.getExpensesAmountToday = [
+exports.getExpensesByPeriod = [
 	async (req, res) => {
 		const idUser = req.user.id;
+		console.log(idUser);
+		const { period, periodNumber } = req.params;
 
 		if (!idUser) {
 			return res.status(400).json({
@@ -78,50 +112,42 @@ exports.getExpensesAmountToday = [
 			});
 		}
 
-		const today = new Date();
-		// avec mongoose, filtrer les expenses par raport a la date d'aujourd'hui grace a $gte et $lte
-		const expenses = await Expense.find({
-			user: idUser,
-			date: {
-				$gte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
-				$lte: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
-			}
-		});
+		let startDate, endDate;
+		let dayNumber = moment().dayOfYear();
+		let weekNumber = moment().week();
+		let monthNumber = moment().add(1, 'month').month();
+		let yearNumber = moment().year();
 
+		if (period === 'day') {
+			periodNumber && (dayNumber = periodNumber);
+			startDate = moment(dayNumber, 'DDD DDDD').format();
+			endDate = moment(startDate).endOf('day').format();
 
-		if (!expenses) {
-			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
+		} else if (period === 'week') {
+			periodNumber && (weekNumber = periodNumber);
+			startDate = moment(weekNumber, 'w ww').format();
+			endDate = moment(startDate).endOf('week').format('YYYY-MM-DD');
+			console.log('startDate : ', startDate);
+			console.log('endDate : ', endDate);
+
+		} else if (period === 'month') {
+			periodNumber && (monthNumber = periodNumber);
+			startDate = moment(monthNumber, 'M MM').format('YYYY-MM-DD');
+			endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+
+		} else if (period === 'year') {
+			periodNumber && (yearNumber = periodNumber);
+			startDate = moment(yearNumber, 'YYYY').format('YYYY-MM-DD');
+			endDate = moment(startDate).endOf('year').format('YYYY-MM-DD');
+		} else {
+			return res.status(400).json({ result: false, message: 'Période invalide' });
 		}
-
-		const expensesAmount = expenses.reduce((acc, expense) => acc + expense.amount, 0);
-
-		res.status(200).json({ result: true, expenses: expensesAmount });
-	}
-];
-
-exports.getExpensesAmountWeek = [
-
-	async (req, res) => {
-
-		const idUser = req.user.id;
-
-		if (!idUser) {
-			return res.status(400).json({
-				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/expenses"
-			});
-		}
-
-		const today = new Date();
-
-		const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
-		const lastDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 7));
 
 		const expenses = await Expense.find({
 			user: idUser,
 			date: {
-				$gte: new Date(firstDayOfWeek.getFullYear(), firstDayOfWeek.getMonth(), firstDayOfWeek.getDate()),
-				$lte: new Date(lastDayOfWeek.getFullYear(), lastDayOfWeek.getMonth(), lastDayOfWeek.getDate())
+				$gte: startDate,
+				$lte: endDate
 			}
 		});
 
@@ -129,66 +155,33 @@ exports.getExpensesAmountWeek = [
 			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
 		}
 
-		const expensesAmount = expenses.reduce((acc, expense) => acc + expense.amount, 0);
-
-		res.status(200).json({ result: true, expenses: expensesAmount });
-	}
-];
-
-exports.getExpensesAmountMonth = [
-
-	async (req, res) => {
-
-		const idUser = req.user.id;
-
-		if (!idUser) {
-			return res.status(400).json({
-				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/expenses"
-			});
-		}
-
-		const today = new Date();
-
-		const monthNumber = req.params.monthNumber;
-		const firstDayOfMonth = new Date(today.getFullYear(), monthNumber - 1, 1);
-		const lastDayOfMonth = new Date(today.getFullYear(), monthNumber, 0);
-
-		const expenses = await Expense.find({
-			user: idUser,
-			date: {
-				$gte: new Date(firstDayOfMonth.getFullYear(), firstDayOfMonth.getMonth(), firstDayOfMonth.getDate()),
-				$lte: new Date(lastDayOfMonth.getFullYear(), lastDayOfMonth.getMonth(), lastDayOfMonth.getDate())
+		const expensesByCategory = {};
+		for (const expense of expenses) {
+			const category = await ExpensesCategory.findById(expense.category);
+			const categoryName = category.category;
+			const categoryAmount = expense.amount;
+			if (expensesByCategory[categoryName]) {
+				expensesByCategory[categoryName] += categoryAmount;
+			} else {
+				expensesByCategory[categoryName] = categoryAmount;
 			}
-		});
-
-		const incomesPrelevement = await Income.find({
-			user: idUser,
-			type: "prelevement",
-			status: "accepted",
-			date: {
-				$gte: new Date(firstDayOfMonth.getFullYear(), firstDayOfMonth.getMonth(), firstDayOfMonth.getDate()),
-				$lte: new Date(lastDayOfMonth.getFullYear(), lastDayOfMonth.getMonth(), lastDayOfMonth.getDate())
-			}
-		});
-
-		console.log("incomesPrelevement : ", incomesPrelevement)
-
-		if (!expenses) {
-			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
 		}
 
-		if (!incomesPrelevement) {
-			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des prelevements' });
-		}
+		const sortedExpensesByCategory = Object.entries(expensesByCategory).sort((a, b) => b[1] - a[1]);
 
-		const expensesAmount = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+		const top3ExpensesByCategory = sortedExpensesByCategory.slice(0, 3);
 
-		const incomesPrelevementAmount = incomesPrelevement.reduce((acc, income) => acc + income.amount, 0);
-		console.log("expensesAmount : ", expensesAmount)
-		console.log("incomesPrelevementAmount : ", incomesPrelevementAmount)
+		const otherExpenses = sortedExpensesByCategory.slice(3);
 
-		res.status(200).json({ result: true, expenses: expensesAmount,incomesPrelevementAmount, expensesAmountTotal: expensesAmount - incomesPrelevementAmount});
+		const otherExpensesAmount = otherExpenses.reduce((acc, expense) => acc + expense[1], 0);
+
+		let amountExpenses = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+
+		if (otherExpensesAmount === 0) return res.status(200).json({ result: true, expenses: top3ExpensesByCategory, amount : amountExpenses });
+
+		const top3ExpensesByCategoryWithOther = [ ...top3ExpensesByCategory, [ 'Autre', otherExpensesAmount ] ];
+
+		res.status(200).json({ result: true, expenses: top3ExpensesByCategoryWithOther, amount : amountExpenses });
 	}
 ];
 
@@ -237,8 +230,7 @@ exports.getExpensesByCategory = [
 			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
 		}
 
-
-		console.log("expenses :", expenses)
+		console.log('expenses :', expenses);
 
 		const expensesByCategory = [];
 		for (const expense of expenses) {
@@ -252,7 +244,7 @@ exports.getExpensesByCategory = [
 			}
 		}
 
-		console.log("expensesByCategory : ", expensesByCategory)
+		console.log('expensesByCategory : ', expensesByCategory);
 
 		const sortedExpensesByCategory = Object.entries(expensesByCategory).sort((a, b) => b[1] - a[1]);
 
@@ -264,14 +256,11 @@ exports.getExpensesByCategory = [
 
 		if (otherExpensesAmount === 0) return res.status(200).json({ result: true, expenses: top3ExpensesByCategory });
 
-		const top3ExpensesByCategoryWithOther = [...top3ExpensesByCategory, ['Autre', otherExpensesAmount]];
+		const top3ExpensesByCategoryWithOther = [ ...top3ExpensesByCategory, [ 'Autre', otherExpensesAmount ] ];
 
 		res.status(200).json({ result: true, expenses: top3ExpensesByCategoryWithOther });
 	}
 ];
-
-
-
 
 exports.addExpenses = [
 	async (req, res) => {
@@ -288,7 +277,7 @@ exports.addExpenses = [
 
 		const { amount, category, description, expensesDate, source, expensesMethod, frequency, status } = req.body;
 
-		console.log(req.body)
+		console.log(req.body);
 		console.log('expensesDate : ', expensesDate);
 
 		if (!amount) {
@@ -300,9 +289,11 @@ exports.addExpenses = [
 		}
 
 		if (new Date(expensesDate).getTime() > today.getTime()) {
-			return res.status(400).json({ result: false, message: "Veuillez ne pouvez pas entrer une date de paiement supérieur à la date d'aujourd'hui" })
-
-		};
+			return res.status(400).json({
+				result: false,
+				message: "Veuillez ne pouvez pas entrer une date de paiement supérieur à la date d'aujourd'hui"
+			});
+		}
 
 		const newExpenses = new Expense({
 			user: idUser,

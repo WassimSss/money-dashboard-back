@@ -6,12 +6,12 @@ const { getBudgetAmount, getExpensesByCategory } = require('../modules/userReque
 exports.getBudget = [
 	async (req, res) => {
 		const idUser = req.user.id;
-		const { period } = req.params;
+		const { period, periodNumber } = req.params;
 
 		console.log(idUser)
-		const budgetAmount = await getBudgetAmount(idUser, period);
+		const budgetAmount = await getBudgetAmount(idUser, period,);
 
-		const expensesByCategory = await getExpensesByCategory(idUser, period);
+		const expensesByCategory = await getExpensesByCategory(idUser, period, periodNumber);
 
 		console.log("expensesByCategory : ", expensesByCategory)
 		if (!budgetAmount && budgetAmount !== 0) {
