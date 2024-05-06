@@ -66,8 +66,6 @@ exports.signup = [
 				password: hashedPassword // Assurez-vous de hacher le mot de passe avant de l'enregistrer
 			});
 
-			console.log(user);
-
 			// Enregistrez l'utilisateur dans la base de données
 			await user.save();
 
@@ -75,7 +73,6 @@ exports.signup = [
 
 			res.status(201).json({ result: true, message: 'Utilisateur enregistré avec succès.', token });
 		} catch (error) {
-			console.log(error);
 			res.status(500).json({ result: false, message: "Erreur lors de l'enregistrement de l'utilisateur." });
 		}
 	}
@@ -96,15 +93,11 @@ exports.signin = [
 		try {
 			const { email, password } = req.body;
 
-			console.log(email, password);
-
 			const user = await User.findOne({ email: email });
 
 			if (!user) {
 				return res.status(400).json({ result: false, message: "L'email ou le mot de passe est incorrect." });
 			}
-
-			console.log(password, user.password);
 
 			if (!bcrypt.compareSync(password, user.password)) {
 				return res.status(400).json({ result: false, message: "L'email ou le mot de passe est incorrect." });
@@ -114,7 +107,6 @@ exports.signin = [
 
 			return res.status(201).json({ result: true, token });
 		} catch (error) {
-			console.log(error);
 			res.status(500).json({ result: false, message: 'Erreur lors de la connexion' });
 		}
 	}

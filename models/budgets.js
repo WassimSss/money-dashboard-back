@@ -7,20 +7,28 @@ const budgetSchema = new mongoose.Schema({
 		ref: 'User', // Référence à la collection des utilisateurs
 		required: true
 	},
+	period: {
+		type: String,
+		// required: true
+	},
+	period_amount: {
+		type: Number,
+		// required: true
+	},
 	month_amount: {
 		type: Number,
-		required: true
+		// required: true
 	},
 	// year_amount: {
 	// 	type: Number,
 	// 	required: true
 	// },
-	expenses: [
-		{
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'Expense' // Référence à la collection des dépenses
-		}
-	]
+	// expenses: [
+	// 	{
+	// 		type: mongoose.Schema.Types.ObjectId,
+	// 		ref: 'Expense' // Référence à la collection des dépenses
+	// 	}
+	// ]
 });
 
 // Modèle pour le budget mensuel

@@ -16,7 +16,6 @@ exports.getBalanceAmount = [
 
 		const balanceUser = await getBalanceOfUser(idUser);
 
-		console.log(balanceUser);
 		if (!balanceUser && balanceUser !== 0) {
 			return res.status(400).json({
 				result: false,
@@ -55,7 +54,6 @@ exports.getAllBalance = [
 
 		const formattedBalancesAndExpenses = balancesAndExpenses.map((balance) => {
 			if(balance.type){
-				console.log(balance)
 			}
 			return {
 				id: balance._id,
@@ -69,7 +67,6 @@ exports.getAllBalance = [
 				status: balance.status
 			};
 		});
-		// console.log(balancesAndExpenses);
 
 		res.json({ result: true, history: formattedBalancesAndExpenses });
 	}
@@ -94,8 +91,6 @@ exports.setBalance = [
 		if (!user) {
 			return res.status(404).json({ result: false, message: 'Utilisateur non trouvé' });
 		}
-
-		console.log(user);
 
 		res.status(200).json({ result: true, balance: user.balance, message: 'Ajout de la somme réussie !' });
 	}

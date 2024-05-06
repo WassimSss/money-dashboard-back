@@ -16,7 +16,6 @@ exports.getExpensesAmount = [
 		}
 
 		const expenses = await getExpensesOfUser(idUser);
-		console.log('in serv ', expenses);
 		if (!expenses && expenses !== 0) {
 			return res
 				.status(400)
@@ -102,7 +101,6 @@ exports.getAllExpenses = [
 exports.getExpensesByPeriod = [
 	async (req, res) => {
 		const idUser = req.user.id;
-		console.log(idUser);
 		const { period, periodNumber } = req.params;
 
 		if (!idUser) {
@@ -127,8 +125,6 @@ exports.getExpensesByPeriod = [
 			periodNumber && (weekNumber = periodNumber);
 			startDate = moment(weekNumber, 'w ww').format();
 			endDate = moment(startDate).endOf('week').format('YYYY-MM-DD');
-			console.log('startDate : ', startDate);
-			console.log('endDate : ', endDate);
 
 		} else if (period === 'month') {
 			periodNumber && (monthNumber = periodNumber);
@@ -230,8 +226,6 @@ exports.getExpensesByCategory = [
 			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
 		}
 
-		console.log('expenses :', expenses);
-
 		const expensesByCategory = [];
 		for (const expense of expenses) {
 			const category = await ExpensesCategory.findById(expense.category);
@@ -243,8 +237,6 @@ exports.getExpensesByCategory = [
 				expensesByCategory[categoryName] = categoryAmount;
 			}
 		}
-
-		console.log('expensesByCategory : ', expensesByCategory);
 
 		const sortedExpensesByCategory = Object.entries(expensesByCategory).sort((a, b) => b[1] - a[1]);
 
@@ -267,7 +259,6 @@ exports.addExpenses = [
 		const idUser = req.user.id;
 		const today = new Date();
 
-		console.log('expensesDate : ', req.body);
 		if (!idUser) {
 			return res.status(400).json({
 				result: false,
@@ -276,9 +267,6 @@ exports.addExpenses = [
 		}
 
 		const { amount, category, description, expensesDate, source, expensesMethod, frequency, status } = req.body;
-
-		console.log(req.body);
-		console.log('expensesDate : ', expensesDate);
 
 		if (!amount) {
 			return res.status(400).json({ result: false, message: 'Veuillez rentrer un montant' });
@@ -309,8 +297,6 @@ exports.addExpenses = [
 
 		const expenses = await newExpenses.save();
 
-		console.log(expenses);
-
 		if (!expenses) {
 			res.status(400).json({ result: false, message: 'Erreur lors de la création de la dépense' });
 		}
@@ -328,7 +314,6 @@ exports.deleteExpenses = [
 		const idUser = req.user.id;
 		const { idExpenses } = req.body;
 
-		console.log(req.body);
 		if (!idUser) {
 			return res.status(400).json({
 				result: false,

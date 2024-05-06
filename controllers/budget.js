@@ -1,19 +1,17 @@
 const Budget = require('../models/budgets');
 const Expense = require('../models/expenses');
-const { getBudgetAmount, getExpensesByCategory } = require('../modules/userRequest');
+const { getBudgetAmount, getExpensesByCategory, getMonthBudgetAmount } = require('../modules/userRequest');
 
 // Recuperer le budget d'un utilisateur
 exports.getBudget = [
 	async (req, res) => {
 		const idUser = req.user.id;
-		const { period, periodNumber } = req.params;
+		const { period, periodNumber, year } = req.params;
 
-		console.log(idUser)
 		const budgetAmount = await getBudgetAmount(idUser, period,);
 
-		const expensesByCategory = await getExpensesByCategory(idUser, period, periodNumber);
+		const expensesByCategory = await getExpensesByCategory(idUser, period, periodNumber, year);
 
-		console.log("expensesByCategory : ", expensesByCategory)
 		if (!budgetAmount && budgetAmount !== 0) {
 			return res
 				.status(400)
@@ -26,13 +24,29 @@ exports.getBudget = [
 	}
 ]
 
+exports.getMonthBudget = [
+	async (req, res) => {
+		const idUser = req.user.id;
+		const { period, periodNumber, month, year } = req.params;
+
+		let budgetAmount = await getMonthBudgetAmount(idUser, month, year);
+
+		const expensesByCategory = await getExpensesByCategory(idUser, period, month, year);
+
+		console.log("budgetAmount : ", budgetAmount)
+		console.log("expensesByCategory : ", expensesByCategory)
+
+		res.status(200).json({ result: true, budgetAmount, expensesByCategory: expensesByCategory.expensesByCategory, expensesAmount: expensesByCategory.expensesAmount });
+	}
+]
+
 
 // Modifier le budget d'un utilisateur
 exports.setBudget = [
 	async (req, res) => {
 		const idUser = req.user.id;
-		const { monthAmount } = req.body;
-
+		const { monthAmount, month, year } = req.body;
+		console.log("req.body : ", req.body)
 		if (!idUser) {
 			return res.status(400).json({
 				result: false,
@@ -40,26 +54,23 @@ exports.setBudget = [
 			});
 		}
 
-		console.log(idUser)
 		// si l'utilisateur a déjà un budget, ajouter le budget
-		let budget = await Budget.findOne({ user: idUser });
+		let budget = await Budget.findOne({ user: idUser, period: `${month}-${year}` });
 
 		if (budget) {
-			const updatedBudget = await Budget.findOneAndUpdate(
-				{ user: idUser },
-				{ month_amount: monthAmount },
-				{ new: true });
+			budget.period_amount = monthAmount;
+			budget.month_amount = monthAmount;
 
-			budget = await updatedBudget.save();
+			budget.save();
 
 		} else {
-			// Récuperer les dépenses de l'utilisateur
-			const expenses = await Expense.find({ user: idUser });
 
 			const newBudget = new Budget({
 				user: idUser,
+				period: `${month}-${year}`,
+				period_amount: monthAmount,
 				month_amount: monthAmount,
-				expenses
+				// expenses
 			});
 
 			budget = await newBudget.save();

@@ -15,7 +15,6 @@ exports.getSavingAmount = [
 		}
 
 		const saving = await getSavingOfUser(idUser);
-		console.log('in serv ', saving);
 		if (!saving && saving !== 0) {
 			return res
 				.status(400)
@@ -97,7 +96,6 @@ exports.addSaving = [
 
 		const saving = await newSaving.save();
 
-		console.log(saving);
 
 		if (!saving) {
 			res.status(400).json({ result: false, message: "Erreur lors de la création de l'economie" });

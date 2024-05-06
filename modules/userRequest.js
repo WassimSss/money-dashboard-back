@@ -72,7 +72,6 @@ const getIncomeOfUser = async (id) => {
 
 	// res.status(200).json({ result: true, message: "Ajout de l'income réussie !" })
 
-	console.log(income);
 	return income;
 };
 
@@ -100,7 +99,6 @@ const getSavingOfUser = async (id) => {
 
 	// res.status(200).json({ result: true, message: "Ajout de l'income réussie !" })
 
-	console.log(saving);
 	return saving;
 };
 
@@ -138,12 +136,11 @@ const getExpensesOfUser = async (id) => {
 
 	// res.status(200).json({ result: true, message: "Ajout de l'income réussie !" })
 
-	console.log(expenses);
 	return expenses;
 };
 
 // Récuperer les dépenses du mois de l'utilisateur et les triers par catégories
-const getExpensesByCategory = async (id, period, periodNumber) => {
+const getExpensesByCategory = async (id, period, periodNumber, year) => {
 	const user = await findUserById(id);
 
 	if (!user) {
@@ -155,7 +152,6 @@ const getExpensesByCategory = async (id, period, periodNumber) => {
 	let weekNumber = moment().week();
 	let monthNumber = moment().add(1, 'month').month();
 	let yearNumber = moment().year();
-
 	if (period === 'day') {
 		periodNumber && (dayNumber = periodNumber);
 		startDate = moment(dayNumber, 'DDD DDDD').format();
@@ -166,8 +162,10 @@ const getExpensesByCategory = async (id, period, periodNumber) => {
 		endDate = moment(startDate).endOf('week').format('YYYY-MM-DD');
 	} else if (period === 'month') {
 		periodNumber && (monthNumber = periodNumber);
-		startDate = moment(monthNumber, 'M MM').format('YYYY-MM-DD');
+		// startDate = moment(monthNumber, 'M MM').format('YYYY-MM-DD');
+		startDate = moment(`${periodNumber}-01-${year}`, 'MM-DD-YYYY').format('YYYY-MM-DD');
 		endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+		console.log(startDate, endDate)
 	} else if (period === 'year') {
 		periodNumber && (yearNumber = periodNumber);
 		startDate = moment(yearNumber, 'YYYY').format('YYYY-MM-DD');
@@ -176,7 +174,6 @@ const getExpensesByCategory = async (id, period, periodNumber) => {
 		return res.status(400).json({ result: false, message: 'Période invalide' });
 	}
 
-	console.log(startDate, endDate);
 	const allExpenses = await Expense.find({
 		user: id,
 		date: {
@@ -203,7 +200,6 @@ const getExpensesByCategory = async (id, period, periodNumber) => {
 		}
 	}
 
-	console.log(expensesByCategory);
 
 	const expensesAmount = allExpenses.reduce((acc, expense) => acc + expense.amount, 0);
 
@@ -212,7 +208,6 @@ const getExpensesByCategory = async (id, period, periodNumber) => {
 /*const sumExpensesOfUser = async (id, expenses) => {
 	const user = await findUserById(id);
 
-	// console.log(user)
 
 	if (!user) {
 		return null;
@@ -255,6 +250,25 @@ const getBudgetAmount = async (id, period) => {
 	return budget[`${period}_amount`];
 };
 
+const getMonthBudgetAmount = async (id, month, year) => {
+	const user = await findUserById(id);
+
+	if (!user) {
+		return null;
+	}
+
+	console.log(`${month}-${year}`)
+	console.log(id)
+	const budget = await Budget.findOne({ user: id, period: `${month}-${year}`});
+
+	console.log(budget)
+	if (!budget) {
+		return null;
+	}
+
+	return budget[`period_amount`];
+};
+
 module.exports = {
 	findUserById,
 	getBalanceOfUser,
@@ -262,5 +276,6 @@ module.exports = {
 	getSavingOfUser,
 	getExpensesOfUser,
 	getBudgetAmount,
-	getExpensesByCategory
+	getExpensesByCategory,
+	getMonthBudgetAmount
 };

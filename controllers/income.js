@@ -13,7 +13,6 @@ exports.getIncomeAmount = [
 		}
 
 		const income = await getIncomeOfUser(idUser);
-		console.log('in serv ', income);
 		if (!income && income !== 0) {
 			return res
 				.status(400)
@@ -46,7 +45,6 @@ exports.getAllIncome = [
 			return new Date(b.date) - new Date(a.date);
 		});
 
-		console.log(income);
 
 		const formattedIncome = income.map((income) => {
 			return {
@@ -113,7 +111,6 @@ exports.addIncome = [
 
 		const { amount, type, category, description, paymentDate, source, paymentMethod, frequency, status } = req.body;
 
-		console.log(paymentDate);
 		if (!amount) {
 			return res.status(400).json({ result: false, message: 'Veuillez rentrer un montant' });
 		}
@@ -143,8 +140,6 @@ exports.addIncome = [
 		});
 
 		const income = await newIncome.save();
-
-		console.log(income);
 
 		if (!income) {
 			res.status(400).json({ result: false, message: "Erreur lors de la création de l'income" });
