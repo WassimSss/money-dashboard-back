@@ -1,6 +1,7 @@
 const Expense = require('../models/expenses');
 const ExpensesCategory = require('../models/expensesCategories');
 const Income = require('../models/incomes');
+const User = require('../models/users');
 const { findUserById, getExpensesOfUser } = require('../modules/userRequest');
 const moment = require('moment');
 
@@ -101,7 +102,7 @@ exports.getAllExpenses = [
 exports.getExpensesByPeriod = [
 	async (req, res) => {
 		const idUser = req.user.id;
-		const { period, periodNumber } = req.params;
+		const { period, periodNumber, year } = req.params;
 
 		if (!idUser) {
 			return res.status(400).json({
@@ -128,7 +129,7 @@ exports.getExpensesByPeriod = [
 
 		} else if (period === 'month') {
 			periodNumber && (monthNumber = periodNumber);
-			startDate = moment(monthNumber, 'M MM').format('YYYY-MM-DD');
+			startDate = moment(`${monthNumber}-01-${year}`, 'MM-DD-YYYY').format('YYYY-MM-DD');
 			endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
 
 		} else if (period === 'year') {
@@ -173,11 +174,11 @@ exports.getExpensesByPeriod = [
 
 		let amountExpenses = expenses.reduce((acc, expense) => acc + expense.amount, 0);
 
-		if (otherExpensesAmount === 0) return res.status(200).json({ result: true, expenses: top3ExpensesByCategory, amount : amountExpenses });
+		if (otherExpensesAmount === 0) return res.status(200).json({ result: true, expenses: top3ExpensesByCategory, amount: amountExpenses });
 
-		const top3ExpensesByCategoryWithOther = [ ...top3ExpensesByCategory, [ 'Autre', otherExpensesAmount ] ];
+		const top3ExpensesByCategoryWithOther = [...top3ExpensesByCategory, ['Autre', otherExpensesAmount]];
 
-		res.status(200).json({ result: true, expenses: top3ExpensesByCategoryWithOther, amount : amountExpenses });
+		res.status(200).json({ result: true, expenses: top3ExpensesByCategoryWithOther, amount: amountExpenses });
 	}
 ];
 
@@ -248,7 +249,7 @@ exports.getExpensesByCategory = [
 
 		if (otherExpensesAmount === 0) return res.status(200).json({ result: true, expenses: top3ExpensesByCategory });
 
-		const top3ExpensesByCategoryWithOther = [ ...top3ExpensesByCategory, [ 'Autre', otherExpensesAmount ] ];
+		const top3ExpensesByCategoryWithOther = [...top3ExpensesByCategory, ['Autre', otherExpensesAmount]];
 
 		res.status(200).json({ result: true, expenses: top3ExpensesByCategoryWithOther });
 	}
@@ -296,6 +297,11 @@ exports.addExpenses = [
 		});
 
 		const expenses = await newExpenses.save();
+
+		// and update the user balance
+		await User.updateOne({ _id: idUser }, { $inc: { balance: -amount } });
+
+
 
 		if (!expenses) {
 			res.status(400).json({ result: false, message: 'Erreur lors de la création de la dépense' });

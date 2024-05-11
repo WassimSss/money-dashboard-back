@@ -7,15 +7,7 @@ router.get('/get', authenticateJWT, getExpensesAmount);
 
 // router.get('/get-by-period/:period/:period', authenticateJWT, getExpensesAmount);
 
-router.get('/get-by-period/:period/:periodNumber?', authenticateJWT, getExpensesByPeriod);
-
-// router.get('/getExpenses/day', authenticateJWT, getExpensesAmountToday);
-
-// router.get('/getExpenses/week', authenticateJWT, getExpensesAmountWeek);
-
-// router.get('/getExpenses/month/:monthNumber', authenticateJWT, getExpensesAmountMonth);
-
-// router.get('/getExpensesByCategory/:period', authenticateJWT, getExpensesByCategory);
+router.get('/get-by-period/:period/:periodNumber?/:year?', authenticateJWT, getExpensesByPeriod);
 
 router.get('/get-all/:period/:periodNumber?', authenticateJWT, getAllExpenses);
 

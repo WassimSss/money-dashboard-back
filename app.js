@@ -13,6 +13,8 @@ var usersBalanceRouter = require('./routes/users-balance');
 var usersExpensesRouter = require('./routes/users-expenses');
 var usersSavingRouter = require('./routes/users-saving');
 var usersExpensesCategoryRouter = require('./routes/users-expenses-category');
+var usersDebtsRouter = require('./routes/users-debts');
+
 
 var apiRouter = require('./routes/api');
 
@@ -35,6 +37,7 @@ app.use('/users/balance', usersBalanceRouter);
 app.use('/users/expenses', usersExpensesRouter);
 app.use('/users/saving', usersSavingRouter);
 app.use('/users/expenses-category', usersExpensesCategoryRouter);
+app.use('/users/debts', usersDebtsRouter);
 
 
 module.exports = app;

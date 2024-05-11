@@ -119,12 +119,12 @@ exports.addIncome = [
 			return res.status(400).json({ result: false, message: 'Veuillez rentrer une date de paiement' });
 		}
 
-		if (new Date(paymentDate).getTime() < today.getTime()) {
-			return res.status(400).json({
-				result: false,
-				message: "Veuillez ne pouvez pas entrer une date de paiement inférieur à la date d'aujourd'hui"
-			});
-		}
+		// if (new Date(paymentDate).getTime() < today.getTime()) {
+		// 	return res.status(400).json({
+		// 		result: false,
+		// 		message: "Veuillez ne pouvez pas entrer une date de paiement inférieur à la date d'aujourd'hui"
+		// 	});
+		// }
 
 		const newIncome = new Income({
 			user: idUser,
