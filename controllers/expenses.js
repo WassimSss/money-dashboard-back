@@ -30,8 +30,7 @@ exports.getExpensesAmount = [
 exports.getAllExpenses = [
 	async (req, res) => {
 		const idUser = req.user.id;
-		const { period, periodNumber } = req.params;
-
+		const { period, periodNumber, year } = req.params;
 
 		if (!idUser) {
 			return res.status(400).json({
@@ -50,17 +49,14 @@ exports.getAllExpenses = [
 			periodNumber && (dayNumber = periodNumber);
 			startDate = moment(dayNumber, 'DDD DDDD').format();
 			endDate = moment(startDate).endOf('day').format();
-
 		} else if (period === 'week') {
 			periodNumber && (weekNumber = periodNumber);
 			startDate = moment(weekNumber, 'w ww').format('YYYY-MM-DD');
 			endDate = moment(startDate).endOf('week').format('YYYY-MM-DD');
-
 		} else if (period === 'month') {
 			periodNumber && (monthNumber = periodNumber);
-			startDate = moment(monthNumber, 'M MM').format('YYYY-MM-DD');
+			startDate = moment(`${monthNumber}-01-${year}`, 'MM-DD-YYYY').format('YYYY-MM-DD');
 			endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
-
 		} else if (period === 'year') {
 			periodNumber && (yearNumber = periodNumber);
 			startDate = moment(yearNumber, 'YYYY').format('YYYY-MM-DD');
@@ -68,6 +64,8 @@ exports.getAllExpenses = [
 		} else {
 			return res.status(400).json({ result: false, message: 'Période invalide' });
 		}
+
+		console.log(startDate, endDate);
 
 		const expenses = await Expense.find({
 			user: idUser,
@@ -95,7 +93,8 @@ exports.getAllExpenses = [
 			};
 		});
 
-		res.json({ result: true, expenses: formattedExpenses });
+		// res.json({ result: true, data: [] })
+		res.json({ result: true, data: formattedExpenses });
 	}
 ];
 
@@ -121,17 +120,14 @@ exports.getExpensesByPeriod = [
 			periodNumber && (dayNumber = periodNumber);
 			startDate = moment(dayNumber, 'DDD DDDD').format();
 			endDate = moment(startDate).endOf('day').format();
-
 		} else if (period === 'week') {
 			periodNumber && (weekNumber = periodNumber);
 			startDate = moment(weekNumber, 'w ww').format();
 			endDate = moment(startDate).endOf('week').format('YYYY-MM-DD');
-
 		} else if (period === 'month') {
 			periodNumber && (monthNumber = periodNumber);
 			startDate = moment(`${monthNumber}-01-${year}`, 'MM-DD-YYYY').format('YYYY-MM-DD');
 			endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
-
 		} else if (period === 'year') {
 			periodNumber && (yearNumber = periodNumber);
 			startDate = moment(yearNumber, 'YYYY').format('YYYY-MM-DD');
@@ -174,9 +170,10 @@ exports.getExpensesByPeriod = [
 
 		let amountExpenses = expenses.reduce((acc, expense) => acc + expense.amount, 0);
 
-		if (otherExpensesAmount === 0) return res.status(200).json({ result: true, expenses: top3ExpensesByCategory, amount: amountExpenses });
+		if (otherExpensesAmount === 0)
+			return res.status(200).json({ result: true, expenses: top3ExpensesByCategory, amount: amountExpenses });
 
-		const top3ExpensesByCategoryWithOther = [...top3ExpensesByCategory, ['Autre', otherExpensesAmount]];
+		const top3ExpensesByCategoryWithOther = [ ...top3ExpensesByCategory, [ 'Autre', otherExpensesAmount ] ];
 
 		res.status(200).json({ result: true, expenses: top3ExpensesByCategoryWithOther, amount: amountExpenses });
 	}
@@ -249,7 +246,7 @@ exports.getExpensesByCategory = [
 
 		if (otherExpensesAmount === 0) return res.status(200).json({ result: true, expenses: top3ExpensesByCategory });
 
-		const top3ExpensesByCategoryWithOther = [...top3ExpensesByCategory, ['Autre', otherExpensesAmount]];
+		const top3ExpensesByCategoryWithOther = [ ...top3ExpensesByCategory, [ 'Autre', otherExpensesAmount ] ];
 
 		res.status(200).json({ result: true, expenses: top3ExpensesByCategoryWithOther });
 	}
@@ -300,8 +297,6 @@ exports.addExpenses = [
 
 		// and update the user balance
 		await User.updateOne({ _id: idUser }, { $inc: { balance: -amount } });
-
-
 
 		if (!expenses) {
 			res.status(400).json({ result: false, message: 'Erreur lors de la création de la dépense' });

@@ -6,12 +6,10 @@ exports.getSavingAmount = [
 		const idUser = req.user.id;
 
 		if (!idUser) {
-			return res
-				.status(400)
-				.json({
-					result: false,
-					message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
-				});
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+			});
 		}
 
 		const saving = await getSavingOfUser(idUser);
@@ -35,21 +33,35 @@ exports.getAllSaving = [
 		const idUser = req.user.id;
 
 		if (!idUser) {
-			return res
-				.status(400)
-				.json({
-					result: false,
-					message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/saving"
-				});
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/saving"
+			});
 		}
 
-		const saving = await Saving.find({ user: idUser });
+		const saving = await Saving.find({ user: idUser }).populate('category');
 
 		saving.sort((a, b) => {
 			return new Date(b.date) - new Date(a.date);
 		});
 
-		res.json({ result: true, saving });
+		console.log(saving[0]);
+
+		const formattedSaving = saving.map((saving) => {
+			return {
+				id: saving._id,
+				amount: saving.amount,
+				category: saving.category.category,
+				description: saving.description,
+				savingDate: saving.savingDate,
+				source: saving.source,
+				savingMethod: saving.savingMethod,
+				frequency: saving.frequency,
+				status: saving.status
+			};
+		});
+
+		res.json({ result: true, data: formattedSaving });
 	}
 ];
 
@@ -59,12 +71,10 @@ exports.addSaving = [
 		const today = new Date();
 
 		if (!idUser) {
-			return res
-				.status(400)
-				.json({
-					result: false,
-					message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/saving"
-				});
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/saving"
+			});
 		}
 
 		const { amount, category, description, savingDate, source, savingMethod, frequency, status } = req.body;
@@ -96,7 +106,6 @@ exports.addSaving = [
 
 		const saving = await newSaving.save();
 
-
 		if (!saving) {
 			res.status(400).json({ result: false, message: "Erreur lors de la création de l'economie" });
 		}
@@ -114,12 +123,10 @@ exports.deleteSaving = [
 		const idSaving = req.body.idSaving;
 
 		if (!idUser) {
-			return res
-				.status(400)
-				.json({
-					result: false,
-					message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/saving"
-				});
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/saving"
+			});
 		}
 
 		if (!idSaving) {

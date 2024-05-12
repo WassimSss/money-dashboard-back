@@ -68,7 +68,7 @@ exports.getAllBalance = [
 			};
 		});
 
-		res.json({ result: true, history: formattedBalancesAndExpenses });
+		res.json({ result: true, data: formattedBalancesAndExpenses });
 	}
 ];
 

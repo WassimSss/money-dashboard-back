@@ -45,7 +45,6 @@ exports.getAllIncome = [
 			return new Date(b.date) - new Date(a.date);
 		});
 
-
 		const formattedIncome = income.map((income) => {
 			return {
 				id: income._id,
@@ -61,7 +60,7 @@ exports.getAllIncome = [
 			};
 		});
 
-		res.json({ result: true, income : formattedIncome});
+		res.json({ result: true, data: formattedIncome });
 	}
 ];
 
@@ -156,6 +155,7 @@ exports.acceptIncome = [
 	async (req, res) => {
 		const idUser = req.user.id;
 
+		console.log(idUser);
 		if (!idUser) {
 			return res.status(400).json({
 				result: false,
@@ -164,6 +164,7 @@ exports.acceptIncome = [
 		}
 
 		const { idIncome } = req.body;
+		console.log(req.body);
 
 		const income = await Income.findOne({ _id: idIncome, status: 'pending' });
 

@@ -165,7 +165,7 @@ const getExpensesByCategory = async (id, period, periodNumber, year) => {
 		// startDate = moment(monthNumber, 'M MM').format('YYYY-MM-DD');
 		startDate = moment(`${periodNumber}-01-${year}`, 'MM-DD-YYYY').format('YYYY-MM-DD');
 		endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
-		console.log(startDate, endDate)
+		console.log(startDate, endDate);
 	} else if (period === 'year') {
 		periodNumber && (yearNumber = periodNumber);
 		startDate = moment(yearNumber, 'YYYY').format('YYYY-MM-DD');
@@ -199,7 +199,6 @@ const getExpensesByCategory = async (id, period, periodNumber, year) => {
 			expensesByCategory.push({ categoryName, categoryAmount, categoryBudget });
 		}
 	}
-
 
 	const expensesAmount = allExpenses.reduce((acc, expense) => acc + expense.amount, 0);
 
@@ -257,11 +256,11 @@ const getMonthBudgetAmount = async (id, month, year) => {
 		return null;
 	}
 
-	console.log(`${month}-${year}`)
-	console.log(id)
-	const budget = await Budget.findOne({ user: id, period: `${month}-${year}`});
+	console.log(`${month}-${year}`);
+	console.log(id);
+	const budget = await Budget.findOne({ user: id, period: `${month}-${year}` });
 
-	console.log(budget)
+	console.log(budget);
 	if (!budget) {
 		return null;
 	}
