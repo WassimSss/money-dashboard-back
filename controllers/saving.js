@@ -77,7 +77,7 @@ exports.addSaving = [
 			});
 		}
 
-		const { amount, category, description, savingDate, source, savingMethod, frequency, status } = req.body;
+		const { amount, category, description, savingDate, source, savingMethod, frequency, status, changeBalanceAmount } = req.body;
 
 		if (!amount) {
 			return res.status(400).json({ result: false, message: 'Veuillez rentrer un montant' });
@@ -110,7 +110,18 @@ exports.addSaving = [
 			res.status(400).json({ result: false, message: "Erreur lors de la création de l'economie" });
 		}
 
+		if(changeBalanceAmount) {
+			const user = await findUserById(idUser);
+			if (!user) {
+				return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de l'utilisateur" });
+			}
+			const newBalance = user.balance - amount;
+			user.balance = newBalance;
+			await user.save();
+		}
+		
 		const sumSaving = await getSavingOfUser(idUser);
+
 
 		res.status(200).json({ result: true, saving: sumSaving, message: "Ajout de l'economie réussie !" });
 	}

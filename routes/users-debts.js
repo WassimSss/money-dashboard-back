@@ -1,6 +1,6 @@
 var express = require('express');
 const { authenticateJWT } = require('../modules/authenticateJWT');
-const { getDebt, addDebt, getAllDebts, deleteDebt } = require('../controllers/debt');
+const { getDebt, addDebt, getAllDebts, deleteDebt, acceptDebt } = require('../controllers/debt');
 const getAll = require('../modules/get/getAll');
 var router = express.Router();
 
@@ -12,6 +12,9 @@ router.get('/get-all/:period/:periodNumber?/:year?', authenticateJWT, (req, res)
 });
 
 router.post('/add', authenticateJWT, addDebt);
+
+router.post('/accept', authenticateJWT, acceptDebt);
+
 
 router.delete('/delete', authenticateJWT, deleteDebt);
 

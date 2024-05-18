@@ -68,6 +68,10 @@ const getAll = async (req, res, dataType) => {
 		query.status = 'pending';
 	}
 
+	if (dataType === 'debts') {
+		query.isPaid = false;
+	}
+
 	if (dataType !== 'balance') {
 		if (Schema.category) {
 			console.log('yo 3 ', query);

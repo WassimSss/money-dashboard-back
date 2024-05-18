@@ -264,7 +264,7 @@ exports.addExpenses = [
 			});
 		}
 
-		const { amount, category, description, expensesDate, source, expensesMethod, frequency, status } = req.body;
+		const { amount, category, description, expensesDate, source, expensesMethod, frequency, status, changeBalanceAmount } = req.body;
 
 		if (!amount) {
 			return res.status(400).json({ result: false, message: 'Veuillez rentrer un montant' });
@@ -296,7 +296,9 @@ exports.addExpenses = [
 		const expenses = await newExpenses.save();
 
 		// and update the user balance
-		await User.updateOne({ _id: idUser }, { $inc: { balance: -amount } });
+		if(changeBalanceAmount){
+			await User.updateOne({ _id: idUser }, { $inc: { balance: -amount } });
+		}
 
 		if (!expenses) {
 			res.status(400).json({ result: false, message: 'Erreur lors de la création de la dépense' });
