@@ -1,6 +1,6 @@
 const Income = require('../models/incomes');
 const { findUserById, getIncomeOfUser } = require('../modules/userRequest');
-
+const moment = require('moment');
 exports.getIncomeAmount = [
 	async (req, res) => {
 		const idUser = req.user.id;
@@ -96,6 +96,44 @@ exports.getVirementOfMonth = [
 	}
 ];
 
+// get income of year
+exports.getIncomeOfYear = [
+	async (req, res) => {
+		const idUser = req.user.id;
+		const { year } = req.params;
+		const month = moment().add("month", 1).month();
+		if (!idUser) {
+			return res.status(400).json({
+				result: false,
+				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/income"
+			});
+		}
+
+		const today = moment();
+
+		const firstDayOfYear = moment(year, "YYYY").startOf('year');
+		const lastDayOfYear = moment(year, "YYYY").endOf('year');
+
+		const monthlyIncome = [];
+			for (let i = 1; i <= month; i++) {
+				const income = await Income.find({
+					user: idUser,
+					date: {
+						$gte: moment(`${i}-01-${year}`, 'MM-DD-YYYY').format('YYYY-MM-DD'),
+						$lte: moment(`${i}-01-${year}`, 'MM-DD-YYYY').endOf('month').format('YYYY-MM-DD')
+					}
+				});
+				const amount = income.reduce((acc, oneIncome) => acc + oneIncome.amount, 0);
+				monthlyIncome.push( amount );
+			
+
+		}
+
+		res.json({ result: true, income: monthlyIncome });
+
+	}
+];
+
 exports.addIncome = [
 	async (req, res) => {
 		const idUser = req.user.id;
@@ -155,7 +193,6 @@ exports.acceptIncome = [
 	async (req, res) => {
 		const idUser = req.user.id;
 
-		console.log(idUser);
 		if (!idUser) {
 			return res.status(400).json({
 				result: false,
@@ -164,7 +201,6 @@ exports.acceptIncome = [
 		}
 
 		const { idIncome } = req.body;
-		console.log(req.body);
 
 		const income = await Income.findOne({ _id: idIncome, status: 'pending' });
 

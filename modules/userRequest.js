@@ -47,7 +47,6 @@ const getBalanceOfUser = async (id) => {
 const getIncomeOfUser = async (id) => {
 	const user = await findUserById(id);
 
-	// console.log(user)
 
 	if (!user) {
 		return null;
@@ -64,7 +63,6 @@ const getIncomeOfUser = async (id) => {
 			income -= oneIncome.amount;
 		}
 	}
-	// console.log(allIncomes)
 	if (!allIncomes) {
 		// return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de tout les incomes" })
 		return null;
@@ -78,7 +76,6 @@ const getIncomeOfUser = async (id) => {
 const getSavingOfUser = async (id) => {
 	const user = await findUserById(id);
 
-	// console.log(user)
 
 	if (!user) {
 		return null;
@@ -91,7 +88,6 @@ const getSavingOfUser = async (id) => {
 	for (const oneSaving of allSavings) {
 		saving += oneSaving.amount;
 	}
-	// console.log(allSavings)
 	if (!allSavings) {
 		// return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de tout les incomes" })
 		return null;
@@ -105,7 +101,6 @@ const getSavingOfUser = async (id) => {
 const getExpensesOfUser = async (id) => {
 	const user = await findUserById(id);
 
-	// console.log(user)
 
 	if (!user) {
 		return null;
@@ -128,7 +123,6 @@ const getExpensesOfUser = async (id) => {
 	for (const oneExpense of allExpenses) {
 		expenses += oneExpense.amount;
 	}
-	// console.log(allExpenses)
 	if (!allExpenses) {
 		// return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de tout les incomes" })
 		return null;
@@ -165,7 +159,6 @@ const getExpensesByCategory = async (id, period, periodNumber, year) => {
 		// startDate = moment(monthNumber, 'M MM').format('YYYY-MM-DD');
 		startDate = moment(`${periodNumber}-01-${year}`, 'MM-DD-YYYY').format('YYYY-MM-DD');
 		endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
-		console.log(startDate, endDate);
 	} else if (period === 'year') {
 		periodNumber && (yearNumber = periodNumber);
 		startDate = moment(yearNumber, 'YYYY').format('YYYY-MM-DD');
@@ -217,7 +210,6 @@ const getExpensesByCategory = async (id, period, periodNumber, year) => {
 	for (const oneExpense of expenses) {
 		expenses += oneExpense.amount;
 	}
-	// console.log(allExpenses)
 	if (!expenses) {
 		// return res.status(400).json({ result: false, message: "Erreur lors de la récuperation de tout les incomes" })
 		return null;
@@ -225,7 +217,6 @@ const getExpensesByCategory = async (id, period, periodNumber, year) => {
 
 	// res.status(200).json({ result: true, message: "Ajout de l'income réussie !" })
 
-	console.log(expenses);
 	return expenses;
 
 }
@@ -256,11 +247,8 @@ const getMonthBudgetAmount = async (id, month, year) => {
 		return null;
 	}
 
-	console.log(`${month}-${year}`);
-	console.log(id);
 	const budget = await Budget.findOne({ user: id, period: `${month}-${year}` });
 
-	console.log(budget);
 	if (!budget) {
 		return null;
 	}

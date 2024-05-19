@@ -33,9 +33,6 @@ exports.getMonthBudget = [
 
 		const expensesByCategory = await getExpensesByCategory(idUser, period, month, year);
 
-		console.log("budgetAmount : ", budgetAmount)
-		console.log("expensesByCategory : ", expensesByCategory)
-
 		res.status(200).json({ result: true, budgetAmount, expensesByCategory: expensesByCategory.expensesByCategory, expensesAmount: expensesByCategory.expensesAmount });
 	}
 ]
@@ -46,7 +43,6 @@ exports.setBudget = [
 	async (req, res) => {
 		const idUser = req.user.id;
 		const { monthAmount, month, year } = req.body;
-		console.log("req.body : ", req.body)
 		if (!idUser) {
 			return res.status(400).json({
 				result: false,

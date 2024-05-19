@@ -8,8 +8,7 @@ const jwt = require('jsonwebtoken');
 
 router.get('/check-auth', (req, res) => {
 	const token = req.headers.authorization.split(' ')[1]; // Supposant que le token est envoyé sous la forme "Bearer <token>"
-	console.log(req.headers);
-	console.log('token : ', token);
+
 	try {
 		if (!token) {
 			return res.status(401).json({ isAuthenticated: false, message: 'Aucun token fourni' });

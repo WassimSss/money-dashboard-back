@@ -63,7 +63,6 @@ const getAll = async (req, res, dataType) => {
 		};
 	}
 
-	console.log(dataType);
 	if (dataType === 'incomes') {
 		query.status = 'pending';
 	}
@@ -74,15 +73,12 @@ const getAll = async (req, res, dataType) => {
 
 	if (dataType !== 'balance') {
 		if (Schema.category) {
-			console.log('yo 3 ', query);
 
 			data = await DataModel.find(query).populate('category');
 		} else if (Schema.user) {
-			console.log('yo 2 ');
 			data = await DataModel.find(query).populate('user');
 		} else {
 			data = await DataModel.find(query);
-			console.log('yo');
 		}
 	} else {
 		data = await Income.find({

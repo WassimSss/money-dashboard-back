@@ -65,7 +65,6 @@ exports.getAllExpenses = [
 			return res.status(400).json({ result: false, message: 'Période invalide' });
 		}
 
-		console.log(startDate, endDate);
 
 		const expenses = await Expense.find({
 			user: idUser,
@@ -134,6 +133,24 @@ exports.getExpensesByPeriod = [
 			endDate = moment(startDate).endOf('year').format('YYYY-MM-DD');
 		} else {
 			return res.status(400).json({ result: false, message: 'Période invalide' });
+		}
+
+		const expensesOfAllMonths = [];
+		if(period === 'year'){
+			for (let i = 1; i <= monthNumber; i++) {
+				const expenses = await Expense.find({
+					user: idUser,
+					date: {
+						$gte: moment(`${i}-01-${year}`, 'MM-DD-YYYY').format('YYYY-MM-DD'),
+						$lte: moment(`${i}-01-${year}`, 'MM-DD-YYYY').endOf('month').format('YYYY-MM-DD')
+					}
+				});
+				const amount = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+				expensesOfAllMonths.push( amount );
+			}
+
+			return res.status(200).json({ result: true, expenses: expensesOfAllMonths });
+
 		}
 
 		const expenses = await Expense.find({

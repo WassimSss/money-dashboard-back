@@ -45,7 +45,6 @@ exports.getAllSaving = [
 			return new Date(b.date) - new Date(a.date);
 		});
 
-		console.log(saving[0]);
 
 		const formattedSaving = saving.map((saving) => {
 			return {

@@ -14,7 +14,6 @@ exports.getDebt = [
 
 		const debt = await Debt.find({ user: idUser, isPaid: false });
 
-		// console.log(debt)
 		if (!debt) {
 			return res.status(400).json({
 				result: false,
@@ -25,13 +24,11 @@ exports.getDebt = [
 		// sum
 		let sum = 0;
 		debt.forEach((debt) => {
-			console.log(debt.amount);
 			if (debt.userIsDebtor) {
 				sum -= debt.amount;
 			} else {
 				sum += debt.amount;
 			}
-			console.log(sum);
 		});
 
 		return res.json({ result: true, debts: sum });
@@ -51,9 +48,7 @@ exports.getAllDebts = [
 
 		const debts = await Debt.find({ user: idUser, isPaid: false });
 
-		console.log(debts);
 		if (!debts) {
-			console.log('dedans');
 			return res.status(400).json({
 				result: false,
 				message: 'Erreur lors de la récuperation de la dette'
@@ -70,7 +65,6 @@ exports.getAllDebts = [
 			};
 		});
 
-		console.log('resuuult');
 		return res.json({ result: true, data: formattedDebts });
 	}
 ];
@@ -112,11 +106,17 @@ exports.addDebt = [
 			debtor
 		});
 
-		console.log(debt);
 
 		await debt.save();
 
-		res.status(200).json({ result: true, debt });
+		
+		let totalDebt = 0;
+		const allDebts = await Debt.find({ user: idUser });
+		allDebts.forEach((debt) => {
+			totalDebt += debt.amount;
+		});
+
+		res.status(200).json({ result: true, debt: totalDebt });
 	}
 ];
 
