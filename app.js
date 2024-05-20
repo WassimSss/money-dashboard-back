@@ -6,8 +6,22 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var app = express();
-var cors = require('cors');
+const app = express();
+const cors = require('cors');
+const allowedOrigins = ['https://dashboard.salmi-wassim.com', 'http://localhost:3000']; // Ajoutez tous les domaines approuvés ici
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
