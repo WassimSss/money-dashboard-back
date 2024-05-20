@@ -6,6 +6,9 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+var app = express();
+var cors = require('cors');
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var usersIncomeRouter = require('./routes/users-income');
@@ -19,8 +22,7 @@ var usersDebtsRouter = require('./routes/users-debts');
 var apiRouter = require('./routes/api');
 
 
-var app = express();
-const cors = require('cors');
+
 
 app.use(cors());
 app.use(logger('dev'));
