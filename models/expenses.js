@@ -26,6 +26,11 @@ const expenseSchema = new mongoose.Schema({
     }
 });
 
+expenseSchema.index({ user: 1 });
+expenseSchema.index({ date: 1 });
+expenseSchema.index({ user: 1, date: 1 });
+
+
 // Modèle pour les dépenses
 const Expense = mongoose.model('Expense', expenseSchema);
 

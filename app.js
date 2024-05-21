@@ -8,7 +8,7 @@ var logger = require('morgan');
 
 const app = express();
 const cors = require('cors');
-const allowedOrigins = ['https://dashboard.salmi-wassim.com', 'http://localhost:3000']; // Ajoutez tous les domaines approuvés ici
+const allowedOrigins = ['https://dashboard.salmi-wassim.com', 'http://localhost:3000'];
 
 const corsOptions = {
   origin: function (origin, callback) {
