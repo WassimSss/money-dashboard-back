@@ -1,3 +1,4 @@
+const { default: mongoose } = require('mongoose');
 const Income = require('../models/incomes');
 const { findUserById, getIncomeOfUser } = require('../modules/userRequest');
 const moment = require('moment');
@@ -141,6 +142,7 @@ exports.getIncomeOfYear = [
 
 					res.json({ result: true, income: monthlyIncome });
 			} catch (err) {
+				console.error(err)
 					res.status(500).json({ result: false, message: 'Erreur du serveur' });
 			}
 	}
