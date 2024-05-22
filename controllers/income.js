@@ -100,38 +100,49 @@ exports.getVirementOfMonth = [
 // get income of year
 exports.getIncomeOfYear = [
 	async (req, res) => {
-		const idUser = req.user.id;
-		const { year } = req.params;
-		const month = moment().add("month", 1).month();
-		if (!idUser) {
-			return res.status(400).json({
-				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/income"
-			});
-		}
-
-		const today = moment();
-
-		const firstDayOfYear = moment(year, "YYYY").startOf('year');
-		const lastDayOfYear = moment(year, "YYYY").endOf('year');
-
-		const monthlyIncome = [];
-			for (let i = 1; i <= month; i++) {
-				const income = await Income.find({
-					user: idUser,
-					date: {
-						$gte: moment(`${i}-01-${year}`, 'MM-DD-YYYY').format('YYYY-MM-DD'),
-						$lte: moment(`${i}-01-${year}`, 'MM-DD-YYYY').endOf('month').format('YYYY-MM-DD')
-					}
-				});
-				const amount = income.reduce((acc, oneIncome) => acc + oneIncome.amount, 0);
-				monthlyIncome.push( amount );
+			const idUser = req.user.id;
+			const { year } = req.params;
+			const month = moment().month() + 1; // Correction pour obtenir le mois actuel (1-12)
 			
+			if (!idUser) {
+					return res.status(400).json({
+							result: false,
+							message: "Erreur lors de la récupération de l'utilisateur lors de /users/idUser/income"
+					});
+			}
 
-		}
+			const firstDayOfYear = moment(year, "YYYY").startOf('year').toDate();
+			const lastDayOfYear = moment(year, "YYYY").endOf('year').toDate();
 
-		res.json({ result: true, income: monthlyIncome });
+			try {
+					const incomes = await Income.aggregate([
+							{
+									$match: {
+											user: new mongoose.Types.ObjectId(idUser),
+											date: { $gte: firstDayOfYear, $lte: lastDayOfYear }
+									}
+							},
+							{
+									$group: {
+											_id: { month: { $month: "$date" } },
+											totalAmount: { $sum: "$amount" }
+									}
+							},
+							{ $sort: { "_id.month": 1 } }
+					]);
 
+					// Crée un tableau avec 12 mois initialisé à 0
+					const monthlyIncome = Array.from({ length: 12 }, (_, i) => 0);
+
+					// Remplir le tableau avec les données d'agrégation
+					incomes.forEach(income => {
+							monthlyIncome[income._id.month - 1] = income.totalAmount;
+					});
+
+					res.json({ result: true, income: monthlyIncome });
+			} catch (err) {
+					res.status(500).json({ result: false, message: 'Erreur du serveur' });
+			}
 	}
 ];
 

@@ -33,6 +33,8 @@ exports.getMonthBudget = [
 
 		const expensesByCategory = await getExpensesByCategory(idUser, period, month, year);
 
+		console.log(expensesByCategory)
+
 		res.status(200).json({ result: true, budgetAmount, expensesByCategory: expensesByCategory.expensesByCategory, expensesAmount: expensesByCategory.expensesAmount });
 	}
 ]

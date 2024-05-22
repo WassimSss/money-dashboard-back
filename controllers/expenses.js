@@ -1,3 +1,4 @@
+const { default: mongoose } = require('mongoose');
 const Expense = require('../models/expenses');
 const ExpensesCategory = require('../models/expensesCategories');
 const Income = require('../models/incomes');
@@ -137,7 +138,7 @@ exports.getExpensesByPeriod = [
 					let expenses;
 					if (period === 'year') {
 							expenses = await Expense.aggregate([
-									{ $match: { user: mongoose.Types.ObjectId(idUser), date: { $gte: startDate, $lte: endDate } } },
+									{ $match: { user: new mongoose.Types.ObjectId(idUser), date: { $gte: startDate, $lte: endDate } } },
 									{ $group: { _id: { month: { $month: "$date" } }, total: { $sum: "$amount" } } },
 									{ $sort: { "_id.month": 1 } }
 							]);
@@ -181,6 +182,7 @@ exports.getExpensesByPeriod = [
 							res.status(200).json({ result: true, expenses: top3ExpensesByCategoryWithOther, amount: amountExpenses });
 					}
 			} catch (err) {
+				console.error(err);
 					res.status(500).json({ result: false, message: 'Erreur du serveur' });
 			}
 	}

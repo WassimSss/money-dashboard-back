@@ -6,6 +6,7 @@ const Expense = require('../models/expenses');
 const Budget = require('../models/budgets');
 const ExpensesCategory = require('../models/expensesCategories');
 const moment = require('moment');
+const { default: mongoose } = require('mongoose');
 /**
  * Recherche un utilisateur par son ID dans la base de données.
  *
@@ -138,64 +139,67 @@ const getExpensesByCategory = async (id, period, periodNumber, year) => {
 	const user = await findUserById(id);
 
 	if (!user) {
-		return null;
+			return null;
 	}
 
 	let startDate, endDate;
-	let dayNumber = moment().dayOfYear();
-	let weekNumber = moment().week();
-	let monthNumber = moment().add(1, 'month').month();
-	let yearNumber = moment().year();
-	if (period === 'day') {
-		periodNumber && (dayNumber = periodNumber);
-		startDate = moment(dayNumber, 'DDD DDDD').format();
-		endDate = moment(startDate).endOf('day').format();
-	} else if (period === 'week') {
-		periodNumber && (weekNumber = periodNumber);
-		startDate = moment(weekNumber, 'w ww').format('YYYY-MM-DD');
-		endDate = moment(startDate).endOf('week').format('YYYY-MM-DD');
-	} else if (period === 'month') {
-		periodNumber && (monthNumber = periodNumber);
-		// startDate = moment(monthNumber, 'M MM').format('YYYY-MM-DD');
-		startDate = moment(`${periodNumber}-01-${year}`, 'MM-DD-YYYY').format('YYYY-MM-DD');
-		endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
-	} else if (period === 'year') {
-		periodNumber && (yearNumber = periodNumber);
-		startDate = moment(yearNumber, 'YYYY').format('YYYY-MM-DD');
-		endDate = moment(startDate).endOf('year').format('YYYY-MM-DD');
-	} else {
-		return res.status(400).json({ result: false, message: 'Période invalide' });
+	const currentYear = moment().year();
+
+	switch (period) {
+			case 'day':
+					startDate = moment().dayOfYear(periodNumber || moment().dayOfYear()).startOf('day').toDate();
+					endDate = moment(startDate).endOf('day').toDate();
+					break;
+			case 'week':
+					startDate = moment().week(periodNumber || moment().week()).startOf('week').toDate();
+					endDate = moment(startDate).endOf('week').toDate();
+					break;
+			case 'month':
+					startDate = moment({ year: year || currentYear, month: (periodNumber || moment().month()) - 1 }).startOf('month').toDate();
+					endDate = moment(startDate).endOf('month').toDate();
+					break;
+			case 'year':
+					startDate = moment({ year: periodNumber || currentYear }).startOf('year').toDate();
+					endDate = moment(startDate).endOf('year').toDate();
+					break;
+			default:
+					return { result: false, message: 'Période invalide' };
 	}
 
-	const allExpenses = await Expense.find({
-		user: id,
-		date: {
-			$gte: startDate,
-			$lte: endDate
-		}
-	});
+	try {
+			const allExpenses = await Expense.aggregate([
+					{ $match: { user: new mongoose.Types.ObjectId(id), date: { $gte: startDate, $lte: endDate } } },
+					{ 
+							$group: {
+									_id: "$category",
+									totalAmount: { $sum: "$amount" }
+							}
+					},
+					{
+							$lookup: {
+									from: "expensescategories", // collection name in MongoDB
+									localField: "_id",
+									foreignField: "_id",
+									as: "categoryDetails"
+							}
+					},
+					{ $unwind: "$categoryDetails" },
+					{
+							$project: {
+									categoryName: "$categoryDetails.category",
+									categoryBudget: "$categoryDetails.budget",
+									categoryAmount: "$totalAmount"
+							}
+					}
+			]);
 
-	if (!allExpenses) {
-		return null;
+			const expensesAmount = allExpenses.reduce((acc, expense) => acc + expense.categoryAmount, 0);
+
+			return { expensesByCategory: allExpenses, expensesAmount };
+	} catch (err) {
+			console.error(err);
+			return { result: false, message: 'Erreur du serveur' };
 	}
-
-	const expensesByCategory = [];
-	for (const expense of allExpenses) {
-		const category = await ExpensesCategory.findById(expense.category);
-		const categoryName = category.category;
-		const categoryBudget = category.budget;
-		const categoryAmount = expense.amount;
-		const existingCategory = expensesByCategory.find((item) => item.categoryName === categoryName);
-		if (existingCategory) {
-			existingCategory.categoryAmount += categoryAmount;
-		} else {
-			expensesByCategory.push({ categoryName, categoryAmount, categoryBudget });
-		}
-	}
-
-	const expensesAmount = allExpenses.reduce((acc, expense) => acc + expense.amount, 0);
-
-	return { expensesByCategory, expensesAmount };
 };
 /*const sumExpensesOfUser = async (id, expenses) => {
 	const user = await findUserById(id);
