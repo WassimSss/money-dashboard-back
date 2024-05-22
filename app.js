@@ -8,7 +8,7 @@ var logger = require('morgan');
 
 const app = express();
 const cors = require('cors');
-const allowedOrigins = ['https://dashboard.salmi-wassim.com', 'http://localhost:3000'];
+const allowedOrigins = ['https://dashboard.salmi-wassim.com', 'http://localhost:3000', 'https://money-dashboard-front.vercel.app'];
 
 const corsOptions = {
   origin: function (origin, callback) {

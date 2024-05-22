@@ -343,4 +343,4 @@ exports.deleteExpenses = [
 
 		res.status(200).json({ result: true, message: 'Suppression de la dépense réussie !' });
 	}
-];
+]; 
