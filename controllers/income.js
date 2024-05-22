@@ -1,68 +1,69 @@
 const Income = require('../models/incomes');
 const { findUserById, getIncomeOfUser } = require('../modules/userRequest');
 const moment = require('moment');
-exports.getIncomeAmount = [
-	async (req, res) => {
-		const idUser = req.user.id;
 
-		if (!idUser) {
-			return res.status(400).json({
-				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
-			});
-		}
+// exports.getIncomeAmount = [
+// 	async (req, res) => {
+// 		const idUser = req.user.id;
 
-		const income = await getIncomeOfUser(idUser);
-		if (!income && income !== 0) {
-			return res
-				.status(400)
-				.json({ result: false, message: 'Erreur lors de la récuperation de tout les revenus' });
-		}
-		// const allIncomes = await User.find({ user: idUser });
+// 		if (!idUser) {
+// 			return res.status(400).json({
+// 				result: false,
+// 				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+// 			});
+// 		}
 
-		// if (!allIncomes) {
+// 		const income = await getIncomeOfUser(idUser);
+// 		if (!income && income !== 0) {
+// 			return res
+// 				.status(400)
+// 				.json({ result: false, message: 'Erreur lors de la récuperation de tout les revenus' });
+// 		}
+// 		// const allIncomes = await User.find({ user: idUser });
 
-		// }
+// 		// if (!allIncomes) {
 
-		res.status(200).json({ result: true, income });
-	}
-];
+// 		// }
 
-exports.getAllIncome = [
-	async (req, res) => {
-		const idUser = req.user.id;
+// 		res.status(200).json({ result: true, income });
+// 	}
+// ];
 
-		if (!idUser) {
-			return res.status(400).json({
-				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/income"
-			});
-		}
+// exports.getAllIncome = [
+// 	async (req, res) => {
+// 		const idUser = req.user.id;
 
-		const income = await Income.find({ user: idUser, status: 'pending' }).populate('category');
+// 		if (!idUser) {
+// 			return res.status(400).json({
+// 				result: false,
+// 				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/income"
+// 			});
+// 		}
 
-		income.sort((a, b) => {
-			return new Date(b.date) - new Date(a.date);
-		});
+// 		const income = await Income.find({ user: idUser, status: 'pending' }).populate('category');
 
-		const formattedIncome = income.map((income) => {
-			return {
-				id: income._id,
-				amount: income.amount,
-				type: income.type,
-				category: income.category.category,
-				description: income.description,
-				date: income.date,
-				source: income.source,
-				paymentMethod: income.paymentMethod,
-				frequency: income.frequency,
-				status: income.status
-			};
-		});
+// 		income.sort((a, b) => {
+// 			return new Date(b.date) - new Date(a.date);
+// 		});
 
-		res.json({ result: true, data: formattedIncome });
-	}
-];
+// 		const formattedIncome = income.map((income) => {
+// 			return {
+// 				id: income._id,
+// 				amount: income.amount,
+// 				type: income.type,
+// 				category: income.category.category,
+// 				description: income.description,
+// 				date: income.date,
+// 				source: income.source,
+// 				paymentMethod: income.paymentMethod,
+// 				frequency: income.frequency,
+// 				status: income.status
+// 			};
+// 		});
+
+// 		res.json({ result: true, data: formattedIncome });
+// 	}
+// ];
 
 exports.getVirementOfMonth = [
 	async (req, res) => {

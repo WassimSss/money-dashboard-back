@@ -13,10 +13,12 @@ const {
 	getExpensesByPeriod
 } = require('../controllers/expenses');
 const getAll = require('../modules/get/getAll');
+const get = require('../modules/get/get');
 
-router.get('/get', authenticateJWT, getExpensesAmount);
 
-// router.get('/get-by-period/:period/:period', authenticateJWT, getExpensesAmount);
+router.get('/get', authenticateJWT, (req, res) => {
+	get(req, res, 'expenses');
+});
 
 router.get('/get-by-period/:period/:periodNumber?/:year?', authenticateJWT, getExpensesByPeriod);
 

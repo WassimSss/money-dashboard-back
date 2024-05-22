@@ -3,74 +3,74 @@ const Income = require('../models/incomes');
 const User = require('../models/users');
 const { findUserById, getBalanceOfUser } = require('../modules/userRequest');
 
-exports.getBalanceAmount = [
-	async (req, res) => {
-		const idUser = req.user.id;
+// exports.getBalanceAmount = [
+// 	async (req, res) => {
+// 		const idUser = req.user.id;
 
-		if (!idUser) {
-			return res.status(400).json({
-				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
-			});
-		}
+// 		if (!idUser) {
+// 			return res.status(400).json({
+// 				result: false,
+// 				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+// 			});
+// 		}
 
-		const balanceUser = await getBalanceOfUser(idUser);
+// 		const balanceUser = await getBalanceOfUser(idUser);
 
-		if (!balanceUser && balanceUser !== 0) {
-			return res.status(400).json({
-				result: false,
-				message: 'Erreur lors de la récuperation de balance lors de /users/idUser/balance'
-			});
-		}
+// 		if (!balanceUser && balanceUser !== 0) {
+// 			return res.status(400).json({
+// 				result: false,
+// 				message: 'Erreur lors de la récuperation de balance lors de /users/idUser/balance'
+// 			});
+// 		}
 
-		res.json({ result: true, balance: balanceUser });
-	}
-];
+// 		res.json({ result: true, balance: balanceUser });
+// 	}
+// ];
 
 // Récuperer toutes les virements et prelevement de l'utilisateur une fois qu'ils ont été validé (status: accepted)
 // ainsi que ses achats (expenses) et les trier par date
-exports.getAllBalance = [
-	async (req, res) => {
-		const idUser = req.user.id;
+// exports.getAllBalance = [
+// 	async (req, res) => {
+// 		const idUser = req.user.id;
 
-		if (!idUser) {
-			return res.status(400).json({
-				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
-			});
-		}
+// 		if (!idUser) {
+// 			return res.status(400).json({
+// 				result: false,
+// 				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+// 			});
+// 		}
 
-		// stocker les virements/prelevement et les achats de l'utilisateur
+// 		// stocker les virements/prelevement et les achats de l'utilisateur
 
-		const balancesAndExpenses = [];
+// 		const balancesAndExpenses = [];
 
-		const balance = await Income.find({ user: idUser, status: 'accepted' }).populate('category');
+// 		const balance = await Income.find({ user: idUser, status: 'accepted' }).populate('category');
 
-		balancesAndExpenses.push(...balance);
+// 		balancesAndExpenses.push(...balance);
 
-		const expenses = await Expense.find({ user: idUser }).populate('category');
+// 		const expenses = await Expense.find({ user: idUser }).populate('category');
 
-		balancesAndExpenses.push(...expenses);
+// 		balancesAndExpenses.push(...expenses);
 
-		const formattedBalancesAndExpenses = balancesAndExpenses.map((balance) => {
-			if(balance.type){
-			}
-			return {
-				id: balance._id,
-				amount: balance.amount,
-				category: balance.category.category,
-				description: balance.description,
-				date: balance.date,
-				source: balance.source,
-				balancesMethod: balance.balancesMethod,
-				frequency: balance.frequency,
-				status: balance.status
-			};
-		});
+// 		const formattedBalancesAndExpenses = balancesAndExpenses.map((balance) => {
+// 			if(balance.type){
+// 			}
+// 			return {
+// 				id: balance._id,
+// 				amount: balance.amount,
+// 				category: balance.category.category,
+// 				description: balance.description,
+// 				date: balance.date,
+// 				source: balance.source,
+// 				balancesMethod: balance.balancesMethod,
+// 				frequency: balance.frequency,
+// 				status: balance.status
+// 			};
+// 		});
 
-		res.json({ result: true, data: formattedBalancesAndExpenses });
-	}
-];
+// 		res.json({ result: true, data: formattedBalancesAndExpenses });
+// 	}
+// ];
 
 exports.setBalance = [
 	async (req, res) => {

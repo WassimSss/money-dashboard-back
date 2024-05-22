@@ -12,8 +12,13 @@ const {
 	getIncomeOfYear
 } = require('../controllers/income');
 const getAll = require('../modules/get/getAll');
+const get = require('../modules/get/get');
 
-router.get('/get', authenticateJWT, getIncomeAmount);
+
+router.get('/get', authenticateJWT, (req, res) => {
+	get(req, res, 'incomes');
+});
+
 
 router.get('/get-all/:period/:periodNumber?/:year?', authenticateJWT, (req, res) => {
 	getAll(req, res, 'incomes');

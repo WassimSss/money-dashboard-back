@@ -1,73 +1,73 @@
 const Debt = require('../models/debts');
 const User = require('../models/users');
 
-exports.getDebt = [
-	async (req, res) => {
-		const idUser = req.user.id;
+// exports.getDebt = [
+// 	async (req, res) => {
+// 		const idUser = req.user.id;
 
-		if (!idUser) {
-			return res.status(400).json({
-				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/income"
-			});
-		}
+// 		if (!idUser) {
+// 			return res.status(400).json({
+// 				result: false,
+// 				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/income"
+// 			});
+// 		}
 
-		const debt = await Debt.find({ user: idUser, isPaid: false });
+// 		const debt = await Debt.find({ user: idUser, isPaid: false });
 
-		if (!debt) {
-			return res.status(400).json({
-				result: false,
-				message: 'Erreur lors de la récuperation de la dette'
-			});
-		}
+// 		if (!debt) {
+// 			return res.status(400).json({
+// 				result: false,
+// 				message: 'Erreur lors de la récuperation de la dette'
+// 			});
+// 		}
 
-		// sum
-		let sum = 0;
-		debt.forEach((debt) => {
-			if (debt.userIsDebtor) {
-				sum -= debt.amount;
-			} else {
-				sum += debt.amount;
-			}
-		});
+// 		// sum
+// 		let sum = 0;
+// 		debt.forEach((debt) => {
+// 			if (debt.userIsDebtor) {
+// 				sum -= debt.amount;
+// 			} else {
+// 				sum += debt.amount;
+// 			}
+// 		});
 
-		return res.json({ result: true, debts: sum });
-	}
-];
+// 		return res.json({ result: true, debts: sum });
+// 	}
+// ];
 
-exports.getAllDebts = [
-	async (req, res) => {
-		const idUser = req.user.id;
+// exports.getAllDebts = [
+// 	async (req, res) => {
+// 		const idUser = req.user.id;
 
-		if (!idUser) {
-			return res.status(400).json({
-				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/income"
-			});
-		}
+// 		if (!idUser) {
+// 			return res.status(400).json({
+// 				result: false,
+// 				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/income"
+// 			});
+// 		}
 
-		const debts = await Debt.find({ user: idUser, isPaid: false });
+// 		const debts = await Debt.find({ user: idUser, isPaid: false });
 
-		if (!debts) {
-			return res.status(400).json({
-				result: false,
-				message: 'Erreur lors de la récuperation de la dette'
-			});
-		}
+// 		if (!debts) {
+// 			return res.status(400).json({
+// 				result: false,
+// 				message: 'Erreur lors de la récuperation de la dette'
+// 			});
+// 		}
 
-		const formattedDebts = debts.map((debt) => {
-			return {
-				id: debt._id,
-				amount: debt.amount,
-				debtor: debt.debtor,
-				userIsDebtor: debt.userIsDebtor,
-				isPaid: debt.isPaid
-			};
-		});
+// 		const formattedDebts = debts.map((debt) => {
+// 			return {
+// 				id: debt._id,
+// 				amount: debt.amount,
+// 				debtor: debt.debtor,
+// 				userIsDebtor: debt.userIsDebtor,
+// 				isPaid: debt.isPaid
+// 			};
+// 		});
 
-		return res.json({ result: true, data: formattedDebts });
-	}
-];
+// 		return res.json({ result: true, data: formattedDebts });
+// 	}
+// ];
 
 exports.deleteDebt = [
 	async (req, res) => {

@@ -5,97 +5,97 @@ const User = require('../models/users');
 const { findUserById, getExpensesOfUser } = require('../modules/userRequest');
 const moment = require('moment');
 
-exports.getExpensesAmount = [
-	async (req, res) => {
-		const idUser = req.user.id;
+// exports.getExpensesAmount = [
+// 	async (req, res) => {
+// 		const idUser = req.user.id;
 
-		if (!idUser) {
-			return res.status(400).json({
-				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
-			});
-		}
+// 		if (!idUser) {
+// 			return res.status(400).json({
+// 				result: false,
+// 				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+// 			});
+// 		}
 
-		const expenses = await getExpensesOfUser(idUser);
-		if (!expenses && expenses !== 0) {
-			return res
-				.status(400)
-				.json({ result: false, message: 'Erreur lors de la récuperation de tout les revenus' });
-		}
+// 		const expenses = await getExpensesOfUser(idUser);
+// 		if (!expenses && expenses !== 0) {
+// 			return res
+// 				.status(400)
+// 				.json({ result: false, message: 'Erreur lors de la récuperation de tout les revenus' });
+// 		}
 
-		res.status(200).json({ result: true, expenses });
-	}
-];
+// 		res.status(200).json({ result: true, expenses });
+// 	}
+// ];
 
-exports.getAllExpenses = [
-	async (req, res) => {
-		const idUser = req.user.id;
-		const { period, periodNumber, year } = req.params;
+// exports.getAllExpenses = [
+// 	async (req, res) => {
+// 		const idUser = req.user.id;
+// 		const { period, periodNumber, year } = req.params;
 
-		if (!idUser) {
-			return res.status(400).json({
-				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/expenses"
-			});
-		}
+// 		if (!idUser) {
+// 			return res.status(400).json({
+// 				result: false,
+// 				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/expenses"
+// 			});
+// 		}
 
-		let startDate, endDate;
-		let dayNumber = moment().dayOfYear();
-		let weekNumber = moment().week();
-		let monthNumber = moment().add(1, 'month').month();
-		let yearNumber = moment().year();
+// 		let startDate, endDate;
+// 		let dayNumber = moment().dayOfYear();
+// 		let weekNumber = moment().week();
+// 		let monthNumber = moment().add(1, 'month').month();
+// 		let yearNumber = moment().year();
 
-		if (period === 'day') {
-			periodNumber && (dayNumber = periodNumber);
-			startDate = moment(dayNumber, 'DDD DDDD').format();
-			endDate = moment(startDate).endOf('day').format();
-		} else if (period === 'week') {
-			periodNumber && (weekNumber = periodNumber);
-			startDate = moment(weekNumber, 'w ww').format('YYYY-MM-DD');
-			endDate = moment(startDate).endOf('week').format('YYYY-MM-DD');
-		} else if (period === 'month') {
-			periodNumber && (monthNumber = periodNumber);
-			startDate = moment(`${monthNumber}-01-${year}`, 'MM-DD-YYYY').format('YYYY-MM-DD');
-			endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
-		} else if (period === 'year') {
-			periodNumber && (yearNumber = periodNumber);
-			startDate = moment(yearNumber, 'YYYY').format('YYYY-MM-DD');
-			endDate = moment(startDate).endOf('year').format('YYYY-MM-DD');
-		} else {
-			return res.status(400).json({ result: false, message: 'Période invalide' });
-		}
+// 		if (period === 'day') {
+// 			periodNumber && (dayNumber = periodNumber);
+// 			startDate = moment(dayNumber, 'DDD DDDD').format();
+// 			endDate = moment(startDate).endOf('day').format();
+// 		} else if (period === 'week') {
+// 			periodNumber && (weekNumber = periodNumber);
+// 			startDate = moment(weekNumber, 'w ww').format('YYYY-MM-DD');
+// 			endDate = moment(startDate).endOf('week').format('YYYY-MM-DD');
+// 		} else if (period === 'month') {
+// 			periodNumber && (monthNumber = periodNumber);
+// 			startDate = moment(`${monthNumber}-01-${year}`, 'MM-DD-YYYY').format('YYYY-MM-DD');
+// 			endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+// 		} else if (period === 'year') {
+// 			periodNumber && (yearNumber = periodNumber);
+// 			startDate = moment(yearNumber, 'YYYY').format('YYYY-MM-DD');
+// 			endDate = moment(startDate).endOf('year').format('YYYY-MM-DD');
+// 		} else {
+// 			return res.status(400).json({ result: false, message: 'Période invalide' });
+// 		}
 
 
-		const expenses = await Expense.find({
-			user: idUser,
-			date: {
-				$gte: startDate,
-				$lte: endDate
-			}
-		}).populate('category');
+// 		const expenses = await Expense.find({
+// 			user: idUser,
+// 			date: {
+// 				$gte: startDate,
+// 				$lte: endDate
+// 			}
+// 		}).populate('category');
 
-		if (!expenses) {
-			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
-		}
+// 		if (!expenses) {
+// 			return res.status(400).json({ result: false, message: 'Erreur lors de la récuperation des dépenses' });
+// 		}
 
-		const formattedExpenses = expenses.map((expense) => {
-			return {
-				id: expense._id,
-				amount: expense.amount,
-				category: expense.category.category,
-				description: expense.description,
-				date: expense.date,
-				source: expense.source,
-				expensesMethod: expense.expensesMethod,
-				frequency: expense.frequency,
-				status: expense.status
-			};
-		});
+// 		const formattedExpenses = expenses.map((expense) => {
+// 			return {
+// 				id: expense._id,
+// 				amount: expense.amount,
+// 				category: expense.category.category,
+// 				description: expense.description,
+// 				date: expense.date,
+// 				source: expense.source,
+// 				expensesMethod: expense.expensesMethod,
+// 				frequency: expense.frequency,
+// 				status: expense.status
+// 			};
+// 		});
 
-		// res.json({ result: true, data: [] })
-		res.json({ result: true, data: formattedExpenses });
-	}
-];
+// 		// res.json({ result: true, data: [] })
+// 		res.json({ result: true, data: formattedExpenses });
+// 	}
+// ];
 
 exports.getExpensesByPeriod = [
 	async (req, res) => {

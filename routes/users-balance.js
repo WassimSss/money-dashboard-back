@@ -4,8 +4,12 @@ const { authenticateJWT } = require('../modules/authenticateJWT');
 
 const { getBalanceAmount, getAllBalance, setBalance } = require('../controllers/balance');
 const getAll = require('../modules/get/getAll');
+const get = require('../modules/get/get');
 
-router.get('/get', authenticateJWT, getBalanceAmount);
+// 76ms 
+router.get('/get', authenticateJWT, (req, res) => {
+	get(req, res, 'balance');
+});
 
 router.get('/get-all/:period/:periodNumber?/:year?', authenticateJWT, (req, res) => {
 	getAll(req, res, 'balance');

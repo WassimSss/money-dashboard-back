@@ -1,68 +1,68 @@
 const Saving = require('../models/savings');
 const { findUserById, getIncomeOfUser, getSavingOfUser } = require('../modules/userRequest');
 
-exports.getSavingAmount = [
-	async (req, res) => {
-		const idUser = req.user.id;
+// exports.getSavingAmount = [
+// 	async (req, res) => {
+// 		const idUser = req.user.id;
 
-		if (!idUser) {
-			return res.status(400).json({
-				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
-			});
-		}
+// 		if (!idUser) {
+// 			return res.status(400).json({
+// 				result: false,
+// 				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/balance"
+// 			});
+// 		}
 
-		const saving = await getSavingOfUser(idUser);
-		if (!saving && saving !== 0) {
-			return res
-				.status(400)
-				.json({ result: false, message: 'Erreur lors de la récuperation de tout les revenus' });
-		}
-		// const allIncomes = await User.find({ user: idUser });
+// 		const saving = await getSavingOfUser(idUser);
+// 		if (!saving && saving !== 0) {
+// 			return res
+// 				.status(400)
+// 				.json({ result: false, message: 'Erreur lors de la récuperation de tout les revenus' });
+// 		}
+// 		// const allIncomes = await User.find({ user: idUser });
 
-		// if (!allIncomes) {
+// 		// if (!allIncomes) {
 
-		// }
+// 		// }
 
-		res.status(200).json({ result: true, saving });
-	}
-];
+// 		res.status(200).json({ result: true, saving });
+// 	}
+// ];
 
-exports.getAllSaving = [
-	async (req, res) => {
-		const idUser = req.user.id;
+// exports.getAllSaving = [
+// 	async (req, res) => {
+// 		const idUser = req.user.id;
 
-		if (!idUser) {
-			return res.status(400).json({
-				result: false,
-				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/saving"
-			});
-		}
+// 		if (!idUser) {
+// 			return res.status(400).json({
+// 				result: false,
+// 				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/saving"
+// 			});
+// 		}
 
-		const saving = await Saving.find({ user: idUser }).populate('category');
+// 		const saving = await Saving.find({ user: idUser }).populate('category');
 
-		saving.sort((a, b) => {
-			return new Date(b.date) - new Date(a.date);
-		});
+// 		saving.sort((a, b) => {
+// 			return new Date(b.date) - new Date(a.date);
+// 		});
 
 
-		const formattedSaving = saving.map((saving) => {
-			return {
-				id: saving._id,
-				amount: saving.amount,
-				category: saving.category.category,
-				description: saving.description,
-				savingDate: saving.savingDate,
-				source: saving.source,
-				savingMethod: saving.savingMethod,
-				frequency: saving.frequency,
-				status: saving.status
-			};
-		});
+// 		const formattedSaving = saving.map((saving) => {
+// 			return {
+// 				id: saving._id,
+// 				amount: saving.amount,
+// 				category: saving.category.category,
+// 				description: saving.description,
+// 				savingDate: saving.savingDate,
+// 				source: saving.source,
+// 				savingMethod: saving.savingMethod,
+// 				frequency: saving.frequency,
+// 				status: saving.status
+// 			};
+// 		});
 
-		res.json({ result: true, data: formattedSaving });
-	}
-];
+// 		res.json({ result: true, data: formattedSaving });
+// 	}
+// ];
 
 exports.addSaving = [
 	async (req, res) => {
