@@ -273,13 +273,14 @@ exports.addExpenses = [
 			});
 		}
 
+		console.log(req.body);
 		const { amount, category, description, expensesDate, source, expensesMethod, frequency, status, changeBalanceAmount } = req.body;
 
 		if (!amount) {
 			return res.status(400).json({ result: false, message: 'Veuillez rentrer un montant' });
 		}
 
-		if (!expensesDate) {
+		if (!moment.isDate(expensesDate)) {
 			return res.status(400).json({ result: false, message: 'Veuillez rentrer une date de dépense' });
 		}
 

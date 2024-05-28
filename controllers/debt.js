@@ -1,5 +1,7 @@
 const Debt = require('../models/debts');
 const User = require('../models/users');
+const get = require('../modules/get/get');
+const getDataAmountOfUser = require('../modules/get/getDataAmountOfUser');
 
 // exports.getDebt = [
 // 	async (req, res) => {
@@ -93,11 +95,26 @@ exports.addDebt = [
 		const { amount, debtor, userIsDebtor } = req.body;
 
 		if (!idUser) {
-			return res.status(400).json({
+			return res.json({
 				result: false,
 				message: "Erreur lors de la récuperation de l'utilisateur lors de /users/idUser/income"
 			});
 		}
+
+		if(!amount){
+			return res.json({
+				result: false,
+				message: "Le montant de la dette est obligatoire"
+			});
+		}
+
+		if(!debtor){
+			return res.json({
+				result: false,
+				message: "Le débiteur est obligatoire"
+			});
+		}
+
 
 		const debt = new Debt({
 			user: idUser,
@@ -110,12 +127,9 @@ exports.addDebt = [
 		await debt.save();
 
 		
-		let totalDebt = 0;
-		const allDebts = await Debt.find({ user: idUser });
-		allDebts.forEach((debt) => {
-			totalDebt += debt.amount;
-		});
+		const totalDebt = await getDataAmountOfUser(idUser, res, 'debts')
 
+		console.log(totalDebt)
 		res.status(200).json({ result: true, debt: totalDebt });
 	}
 ];

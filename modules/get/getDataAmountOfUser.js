@@ -25,6 +25,7 @@ const getDataAmountOfUser = async (idUser, res, dataType) => {
 
   const currentMonth = moment().add('month', 1).month();
   const currentYear = moment().year();
+  let group = {_id: null, [dataType]: {$sum : "$amount"}}  
 
   let startDate;
   let endDate;
@@ -38,23 +39,49 @@ const getDataAmountOfUser = async (idUser, res, dataType) => {
       const query = { user: new mongoose.Types.ObjectId(idUser) }
       if(dataType === 'incomes'){
         query.status = 'pending';
+        group = {
+          _id: null,
+          [dataType]: {
+              $sum: {
+                  $cond: {
+                      if: { $eq: ["$type", "virement"] },
+                      then: "$amount",
+                      else: { $multiply: ["$amount", -1] }
+                  }
+              }
+          }
+      }
       } else if(dataType === 'expenses'){
         startDate = moment(`${currentYear}-${currentMonth}-01`).startOf('month').toDate();
         endDate = moment(startDate).endOf('month').toDate();
-   
+        
         query.date = { $gte: startDate, $lte: endDate };
       } else if (dataType === 'debts'){
         query.isPaid = false
+        group = {
+          _id: null,
+          [dataType]: {
+              $sum: {
+                  $cond: {
+                      if: { $eq: ["$userIsDebtor", false] },
+                      then: "$amount",
+                      else: { $multiply: ["$amount", -1] }
+                  }
+              }
+          }
+      }
       }
       dataModel = dataTypes[dataType];
-        amount = await dataModel.aggregate([
+      amount = await dataModel.aggregate([
         { $match: query },
-        {$group : {_id: null, [dataType]: {$sum : "$amount"}} }
+        {$group : group },
+        
     ]);
 
     if(amount.length === 0){
       return 0;
     }
+    console.log(amount)
     amount = amount[0][dataType];
 
       break;
