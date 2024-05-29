@@ -166,6 +166,8 @@ exports.addIncome = [
 			return res.status(400).json({ result: false, message: 'Veuillez rentrer un montant' });
 		}
 
+		console.log(paymentDate)
+
 		if (!paymentDate) {
 			return res.status(400).json({ result: false, message: 'Veuillez rentrer une date de paiement' });
 		}

@@ -263,6 +263,7 @@ exports.getExpensesByCategory = [
 
 exports.addExpenses = [
 	async (req, res) => {
+		console.log("yo")
 		const idUser = req.user.id;
 		const today = new Date();
 
@@ -280,8 +281,12 @@ exports.addExpenses = [
 			return res.status(400).json({ result: false, message: 'Veuillez rentrer un montant' });
 		}
 
-		if (!moment.isDate(expensesDate)) {
+		if (!expensesDate) {
 			return res.status(400).json({ result: false, message: 'Veuillez rentrer une date de dépense' });
+		}
+
+		if(!description){
+			return res.status(400).json({ result: false, message: 'Veuillez rentrer une description' });
 		}
 
 		if (new Date(expensesDate).getTime() > today.getTime()) {
@@ -313,6 +318,7 @@ exports.addExpenses = [
 		if (!expenses) {
 			res.status(400).json({ result: false, message: 'Erreur lors de la création de la dépense' });
 		}
+		
 
 		const sumExpenses = await getExpensesOfUser(idUser);
 
